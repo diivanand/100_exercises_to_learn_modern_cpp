@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Every reference solution must build and pass, and every exercise starter
+  # must NOT pass. A starter that already passes teaches nothing, and is the
+  # most common way for a course like this to rot.
+  course-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-15 ninja-build
+          echo "CXX=clang++-15" >> "$GITHUB_ENV"
+
+      - name: Check the course is consistent
+        run: ./scripts/check-course.sh
+
+  solutions:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: clang++-15
+          - os: ubuntu-latest
+            compiler: g++-12
+          - os: macos-latest
+            compiler: clang++
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y ninja-build clang-15
+          else
+            brew install ninja
+          fi
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja
+             -DCMAKE_BUILD_TYPE=Debug
+             -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+             -DMCPP_BUILD_SOLUTIONS=ON
+             -DMCPP_BUILD_EXERCISES=OFF
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, thread]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y clang-15 ninja-build
+
+      # The solutions must be clean under the sanitizers, not merely correct.
+      - name: Configure
+        run: cmake -S . -B build -G Ninja
+             -DCMAKE_BUILD_TYPE=Debug
+             -DCMAKE_CXX_COMPILER=clang++-15
+             -DMCPP_SANITIZER=${{ matrix.sanitizer }}
+             -DMCPP_BUILD_SOLUTIONS=ON
+             -DMCPP_BUILD_EXERCISES=OFF
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format-15
+
+      - name: Check formatting
+        run: |
+          find exercises solutions -name '*.cpp' -print0 |
+            xargs -0 clang-format-15 --dry-run --Werror

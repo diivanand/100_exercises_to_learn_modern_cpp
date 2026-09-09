@@ -1,0 +1,71 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": { "major": 3, "minor": 23, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug (default)",
+      "description": "What you want 99% of the time: assertions on, fast builds, full warnings.",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Optimised build. Use it when an exercise asks you to reason about what the optimiser does.",
+      "inherits": "base",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "solutions",
+      "displayName": "Debug + solutions",
+      "description": "Also builds and tests the reference solutions under solutions/.",
+      "inherits": "debug",
+      "cacheVariables": { "MCPP_BUILD_SOLUTIONS": "ON" }
+    },
+    {
+      "name": "asan",
+      "displayName": "AddressSanitizer + UBSan",
+      "description": "Catches use-after-free, buffer overruns and undefined behaviour at runtime.",
+      "inherits": "debug",
+      "cacheVariables": { "MCPP_SANITIZER": "address" }
+    },
+    {
+      "name": "tsan",
+      "displayName": "ThreadSanitizer",
+      "description": "Catches data races. Use it for chapter 10 (concurrency).",
+      "inherits": "debug",
+      "cacheVariables": { "MCPP_SANITIZER": "thread" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug", "configurePreset": "debug" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "solutions", "configurePreset": "solutions" },
+    { "name": "asan", "configurePreset": "asan" },
+    { "name": "tsan", "configurePreset": "tsan" }
+  ],
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": { "outputOnFailure": true, "shortProgress": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": false }
+    },
+    { "name": "debug", "inherits": "base", "configurePreset": "debug" },
+    { "name": "release", "inherits": "base", "configurePreset": "release" },
+    { "name": "solutions", "inherits": "base", "configurePreset": "solutions" },
+    { "name": "asan", "inherits": "base", "configurePreset": "asan" },
+    { "name": "tsan", "inherits": "base", "configurePreset": "tsan" }
+  ]
+}

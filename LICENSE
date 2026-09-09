@@ -1,0 +1,13 @@
+Copyright (c) 2026
+
+The exercises, solutions and documentation in this repository are released
+under the Creative Commons Attribution-NonCommercial 4.0 International
+license (CC BY-NC 4.0).
+
+    https://creativecommons.org/licenses/by-nc/4.0/
+
+This matches the license of "100 exercises to learn Rust" by Mainmatter, on
+which this course's format is based.
+
+The vendored copy of doctest in third_party/doctest/ is distributed under the
+MIT license; see third_party/doctest/LICENSE.txt.

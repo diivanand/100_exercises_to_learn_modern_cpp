@@ -1,0 +1,74 @@
+# ---------------------------------------------------------------------------
+# CLion / JetBrains
+# ---------------------------------------------------------------------------
+# CLion keeps per-project settings in .idea/. Most of it is machine-specific
+# (paths, caches, per-user run configurations) and should not be shared.
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# CLion's default build directories, plus the ones our CMake presets create
+# (cmake-build-debug, cmake-build-asan, ...).
+cmake-build-*/
+
+# ---------------------------------------------------------------------------
+# CMake / build output
+# ---------------------------------------------------------------------------
+build/
+out/
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+.ninja_deps
+.ninja_log
+*.ninja
+
+# ---------------------------------------------------------------------------
+# Compiler / linker artefacts
+# ---------------------------------------------------------------------------
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.gch
+*.pch
+*.d
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+*.dSYM/
+
+# ---------------------------------------------------------------------------
+# Editors / tooling
+# ---------------------------------------------------------------------------
+.vscode/
+.cache/
+.clangd/
+.ccls-cache/
+*.swp
+*~
+
+# ---------------------------------------------------------------------------
+# macOS
+# ---------------------------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ---------------------------------------------------------------------------
+# Local progress state written by ./mcpp
+# ---------------------------------------------------------------------------
+.mcpp-progress

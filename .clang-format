@@ -1,0 +1,30 @@
+# Formatting is a solved problem: pick a style, put it in a file, and never
+# argue about it again. This is LLVM style with a slightly wider column limit,
+# which suits the long standard-library type names modern C++ produces.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++20
+ColumnLimit: 90
+IndentWidth: 2
+PointerAlignment: Left
+ReferenceAlignment: Left
+AllowShortFunctionsOnASingleLine: Empty
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBraces: Attach
+FixNamespaceComments: true
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # doctest first: exercises include it before anything else.
+  - Regex: '^<doctest/'
+    Priority: 1
+  # C++ standard library headers (no extension).
+  - Regex: '^<[a-z_]+>$'
+    Priority: 2
+  # C compatibility headers.
+  - Regex: '^<c[a-z]+>$'
+    Priority: 3
+  # Everything else.
+  - Regex: '.*'
+    Priority: 4
