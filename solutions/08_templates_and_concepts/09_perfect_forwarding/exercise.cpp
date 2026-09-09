@@ -13,10 +13,10 @@ struct Tracked {
   explicit Tracked(std::string name) : name(std::move(name)) {}
 
   Tracked(const Tracked& other) : name(other.name) {
-    ++copies;
+    ++copies_;
   }
   Tracked(Tracked&& other) noexcept : name(std::move(other.name)) {
-    ++moves;
+    ++moves_;
   }
   Tracked& operator=(const Tracked&) = default;
   Tracked& operator=(Tracked&&) noexcept = default;
@@ -24,12 +24,21 @@ struct Tracked {
 
   std::string name;
 
-  static void reset() {
-    copies = 0;
-    moves = 0;
+  [[nodiscard]] static int copies() noexcept {
+    return copies_;
   }
-  static inline int copies = 0;
-  static inline int moves = 0;
+  [[nodiscard]] static int moves() noexcept {
+    return moves_;
+  }
+
+  static void reset() {
+    copies_ = 0;
+    moves_ = 0;
+  }
+
+private:
+  static inline int copies_ = 0;
+  static inline int moves_ = 0;
 };
 
 struct Widget {
@@ -80,7 +89,7 @@ TEST_CASE("forwarding preserves the value category") {
 
   const auto moved = create(Tracked{"temp"}, 1);
   CHECK(moved->payload.name == "temp");
-  CHECK(Tracked::copies == 0);
+  CHECK(Tracked::copies() == 0);
 
   Tracked::reset();
 
@@ -88,7 +97,7 @@ TEST_CASE("forwarding preserves the value category") {
   const auto copied = create(owned, 2);
   CHECK(copied->payload.name == "kept");
   CHECK(owned.name == "kept");
-  CHECK(Tracked::copies == 1);
+  CHECK(Tracked::copies() == 1);
 }
 
 TEST_CASE("forward only on the last use") {
@@ -119,5 +128,8 @@ TEST_CASE("reference collapsing, spelled out") {
   int lvalue = 0;
   CHECK(deduce(lvalue));
   CHECK_FALSE(deduce(0));
+  // std::move on an int copies -- that is the point: `std::move` is a CAST,
+  // not an operation, and casting an int to an rvalue still yields an int.
+  // NOLINTNEXTLINE(performance-move-const-arg)
   CHECK_FALSE(deduce(std::move(lvalue)));
 }

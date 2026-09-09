@@ -5,6 +5,7 @@
 #include <cstdint>
 
 constexpr int count_bits(std::uint32_t value) {
+  // popcount already returns int.
   return std::popcount(value);
 }
 

@@ -8,14 +8,14 @@
 class Session {
 public:
   Session(std::string user, int id) : user_(std::move(user)), id_(id) {
-    ++constructions;
+    ++constructions_;
   }
 
   Session(const Session& other) : user_(other.user_), id_(other.id_) {
-    ++copies;
+    ++copies_;
   }
   Session(Session&& other) noexcept : user_(std::move(other.user_)), id_(other.id_) {
-    ++moves;
+    ++moves_;
   }
   Session& operator=(const Session&) = default;
   Session& operator=(Session&&) noexcept = default;
@@ -28,17 +28,27 @@ public:
     return id_;
   }
 
-  static void reset_counts() {
-    constructions = 0;
-    copies = 0;
-    moves = 0;
+  [[nodiscard]] static int constructions() noexcept {
+    return constructions_;
+  }
+  [[nodiscard]] static int copies() noexcept {
+    return copies_;
+  }
+  [[nodiscard]] static int moves() noexcept {
+    return moves_;
   }
 
-  static inline int constructions = 0;
-  static inline int copies = 0;
-  static inline int moves = 0;
+  static void reset_counts() {
+    constructions_ = 0;
+    copies_ = 0;
+    moves_ = 0;
+  }
 
 private:
+  static inline int constructions_ = 0;
+  static inline int copies_ = 0;
+  static inline int moves_ = 0;
+
   std::string user_;
   int id_;
 };
@@ -68,9 +78,9 @@ TEST_CASE("emplace_back constructs in place") {
   CHECK(sessions[0].user() == "ada");
   CHECK(sessions[2].id() == 3);
 
-  CHECK(Session::constructions == 3);
-  CHECK(Session::moves == 0);
-  CHECK(Session::copies == 0);
+  CHECK(Session::constructions() == 3);
+  CHECK(Session::moves() == 0);
+  CHECK(Session::copies() == 0);
 }
 
 TEST_CASE("push_back of an lvalue still copies -- as it must") {
@@ -81,11 +91,11 @@ TEST_CASE("push_back of an lvalue still copies -- as it must") {
 
   const Session existing{"ada", 1};
   sessions.push_back(existing);
-  CHECK(Session::copies == 1);
+  CHECK(Session::copies() == 1);
 
   Session temporary{"alan", 2};
   sessions.push_back(std::move(temporary));
-  CHECK(Session::moves == 1);
+  CHECK(Session::moves() == 1);
 }
 
 TEST_CASE("emplace_back returns the new element") {

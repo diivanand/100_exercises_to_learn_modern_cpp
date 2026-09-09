@@ -9,17 +9,23 @@
 
 struct Texture {
   explicit Texture(std::string name) : name(std::move(name)) {
-    ++live_count;
+    ++live_count_;
   }
   ~Texture() {
-    --live_count;
+    --live_count_;
   }
 
   Texture(const Texture&) = delete;
   Texture& operator=(const Texture&) = delete;
 
+  [[nodiscard]] static int live_count() noexcept {
+    return live_count_;
+  }
+
   std::string name;
-  static inline int live_count = 0;
+
+private:
+  static inline int live_count_ = 0;
 };
 
 class Cache {
@@ -53,17 +59,17 @@ private:
 };
 
 TEST_CASE("loading the same name twice shares one object") {
-  CHECK(Texture::live_count == 0);
+  CHECK(Texture::live_count() == 0);
   {
     Cache cache;
     const std::shared_ptr<Texture> first = cache.load("grass");
     const std::shared_ptr<Texture> second = cache.load("grass");
 
     CHECK(first.get() == second.get());
-    CHECK(Texture::live_count == 1);
+    CHECK(Texture::live_count() == 1);
     CHECK(first.use_count() == 3);
   }
-  CHECK(Texture::live_count == 0);
+  CHECK(Texture::live_count() == 0);
 }
 
 TEST_CASE("sharing adds an owner rather than a second control block") {
@@ -73,11 +79,11 @@ TEST_CASE("sharing adds an owner rather than a second control block") {
 
   CHECK(owner.get() == other.get());
   CHECK(owner.use_count() == 3);
-  CHECK(Texture::live_count == 1);
+  CHECK(Texture::live_count() == 1);
 }
 
 TEST_CASE("evicting drops the cache's reference") {
-  CHECK(Texture::live_count == 0);
+  CHECK(Texture::live_count() == 0);
   Cache cache;
   {
     const std::shared_ptr<Texture> held = cache.load("water");
@@ -86,9 +92,9 @@ TEST_CASE("evicting drops the cache's reference") {
     cache.evict("water");
     CHECK(cache.size() == 0);
     CHECK(held.use_count() == 1);
-    CHECK(Texture::live_count == 1);
+    CHECK(Texture::live_count() == 1);
   }
-  CHECK(Texture::live_count == 0);
+  CHECK(Texture::live_count() == 0);
 }
 
 TEST_CASE("a shared_ptr is twice the size of a raw pointer") {

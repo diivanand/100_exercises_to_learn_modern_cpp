@@ -71,11 +71,11 @@ private:
 
   template <typename F>
   struct Model final : Concept {
-    explicit Model(F action) : action_(std::move(action)) {}
+    explicit Model(F callable) : action(std::move(callable)) {}
     void run() const override {
-      action_();
+      action();
     }
-    mutable F action_;
+    mutable F action;
   };
 
   std::unique_ptr<Concept> action_;

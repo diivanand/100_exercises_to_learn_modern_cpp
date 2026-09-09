@@ -14,6 +14,10 @@ int count_until_stopped(std::chrono::milliseconds run_for) {
 
   {
     // A jthread passes its stop_token to a callable that asks for one.
+    // A stop_token is passed BY VALUE here on purpose: that is the signature
+    // std::jthread looks for, and the token is a cheap shared handle rather
+    // than something worth referring to.
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     std::jthread worker{[&iterations](std::stop_token token) {
       while (!token.stop_requested()) {
         iterations.fetch_add(1);
@@ -40,6 +44,7 @@ public:
   }
 
   void start() {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     thread_ = std::jthread{[this](std::stop_token token) {
       while (!token.stop_requested()) {
         std::unique_lock lock{mutex_};

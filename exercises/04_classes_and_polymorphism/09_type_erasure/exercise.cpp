@@ -104,9 +104,9 @@ private:
   //     template <typename T>
   //     struct Model final : Concept {
   //       explicit Model(T object) : object_(std::move(object)) {}
-  //       std::string render() const override { return object_.render(); }
+  //       std::string render() const override { return object.render(); }
   //       std::unique_ptr<Concept> clone() const override { ... }
-  //       T object_;
+  //       T object;
   //     };
 
   std::unique_ptr<Concept> self_;

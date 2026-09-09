@@ -23,7 +23,7 @@ inline int open() {
 
 inline void close(int handle) {
   ++close_count;
-  const auto it = std::find(open_handles.begin(), open_handles.end(), handle);
+  const auto it = std::ranges::find(open_handles, handle);
   if (it == open_handles.end()) {
     ++double_close_count;
     return;
@@ -150,6 +150,7 @@ TEST_CASE("moves are noexcept, so a vector of handles is efficient") {
   fake_os::reset();
   {
     std::vector<FileHandle> files;
+    files.reserve(4);
     for (int i = 0; i < 4; ++i) {
       files.emplace_back(fake_os::open());
     }

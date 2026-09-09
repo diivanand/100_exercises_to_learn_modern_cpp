@@ -81,7 +81,7 @@ public:
     //     without adding a stack frame.
     //   * await_resume -> nothing
     struct FinalAwaiter {
-      bool await_ready() const noexcept {
+      [[nodiscard]] bool await_ready() const noexcept {
         return true;
       }
       void await_suspend(std::coroutine_handle<promise_type>) const noexcept {}
@@ -130,11 +130,11 @@ public:
     struct Awaiter {
       std::coroutine_handle<promise_type> handle;
 
-      bool await_ready() const noexcept {
+      [[nodiscard]] bool await_ready() const noexcept {
         return true;
       }
       void await_suspend(std::coroutine_handle<>) const noexcept {}
-      T await_resume() {
+      [[nodiscard]] T await_resume() {
         return T{};
       }
     };

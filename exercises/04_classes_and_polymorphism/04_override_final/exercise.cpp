@@ -45,6 +45,7 @@
 #include <doctest/doctest.h>
 
 #include <memory>
+#include <numbers>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -73,7 +74,7 @@ public:
   // missing a `const`, one takes the wrong parameter type -- and the compiler
   // will point at exactly those once you have asked it to check.
   [[nodiscard]] double area() {
-    return 3.14159265358979 * radius_ * radius_;
+    return std::numbers::pi * radius_ * radius_;
   }
   [[nodiscard]] std::string name() const {
     return "circle";
@@ -119,7 +120,7 @@ TEST_CASE("virtual dispatch reaches the derived implementations") {
 
   CHECK(shapes[0]->name() == "circle");
   CHECK(shapes[1]->name() == "square");
-  CHECK(total_area(shapes) == doctest::Approx(3.14159265358979 + 4.0));
+  CHECK(total_area(shapes) == doctest::Approx(std::numbers::pi + 4.0));
 }
 
 TEST_CASE("describe is overridden, not shadowed") {

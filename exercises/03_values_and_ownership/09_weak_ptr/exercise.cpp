@@ -40,10 +40,10 @@
 
 struct Node {
   explicit Node(std::string name) : name(std::move(name)) {
-    ++live_count;
+    ++live_count_;
   }
   ~Node() {
-    --live_count;
+    --live_count_;
   }
 
   std::string name;
@@ -54,7 +54,12 @@ struct Node {
   std::shared_ptr<Node> parent;
   std::vector<std::shared_ptr<Node>> children;
 
-  static inline int live_count = 0;
+  [[nodiscard]] static int live_count() noexcept {
+    return live_count_;
+  }
+
+private:
+  static inline int live_count_ = 0;
 };
 
 // Links `child` under `parent`, in both directions.
@@ -80,15 +85,15 @@ std::vector<std::string> path_to_root(const std::shared_ptr<Node>& node) {
 }
 
 TEST_CASE("a tree is destroyed when its root is") {
-  CHECK(Node::live_count == 0);
+  CHECK(Node::live_count() == 0);
   {
     const auto root = std::make_shared<Node>("root");
     const auto branch = add_child(root, "branch");
     add_child(branch, "leaf");
-    CHECK(Node::live_count == 3);
+    CHECK(Node::live_count() == 3);
   }
   // With a shared_ptr parent link this stays at 3 forever: a textbook leak.
-  CHECK(Node::live_count == 0);
+  CHECK(Node::live_count() == 0);
 }
 
 TEST_CASE("path_to_root walks up through weak links") {
@@ -117,10 +122,10 @@ TEST_CASE("a weak parent does not keep the parent alive") {
   {
     const auto root = std::make_shared<Node>("root");
     leaf = add_child(root, "leaf");
-    CHECK(Node::live_count == 2);
+    CHECK(Node::live_count() == 2);
   }
   // The root is gone; the leaf survives because we still hold it, and knows
   // that its parent has disappeared.
-  CHECK(Node::live_count == 1);
+  CHECK(Node::live_count() == 1);
   CHECK(path_to_root(leaf) == std::vector<std::string>{"leaf"});
 }

@@ -137,6 +137,28 @@ This is a normal modern CMake project, and it is worth reading:
 If a warning is genuinely in your way, configure with
 `-DMCPP_WARNINGS_AS_ERRORS=OFF`. Use it to keep moving, not as a habit.
 
+### A note on clang-tidy
+
+`.clang-tidy` turns on `bugprone-*`, `cert-*`, `cppcoreguidelines-*`,
+`modernize-*`, `performance-*` and `readability-*`, and then switches off about
+a dozen checks — each with the reason written next to it in the file.
+
+Those disables exist because this is *teaching* code: several exercises
+deliberately demonstrate the thing a check exists to prevent. 03.02 inspects a
+moved-from object on purpose, 03.01 walks a raw pointer on purpose, 08.09 has a
+greedy forwarding constructor on purpose. Leaving those checks on would bury
+the findings about **your** code under complaints about the material.
+
+Read that list before copying the file into a project of your own.
+
+You will also find a handful of `NOLINT` comments in the solutions, each with
+an explanation. They are worth reading: one of them documents a case where
+clang-tidy's suggestion is *wrong*, and wrong for exactly the reason the
+exercise it sits in exists.
+
+The reference solutions are kept clean under this configuration, so if
+`./mcpp tidy` reports something, it is about your code.
+
 ## Using this with CLion
 
 Open the directory. CLion reads `CMakePresets.json` and offers the presets

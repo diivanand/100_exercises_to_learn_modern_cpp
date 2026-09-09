@@ -107,7 +107,7 @@ TEST_CASE("the comparison category is strong") {
 
 TEST_CASE("sorting comes for free") {
   std::vector<Version> versions = {{1, 10, 0}, {1, 2, 0}, {0, 9, 9}, {1, 2, 1}};
-  std::sort(versions.begin(), versions.end());
+  std::ranges::sort(versions);
   CHECK(versions.front() == Version{0, 9, 9});
   CHECK(versions.back() == Version{1, 10, 0});
 }

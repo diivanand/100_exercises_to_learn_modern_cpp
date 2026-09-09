@@ -199,7 +199,8 @@ std::vector<Reading> make_batch(const std::string& name, int count, int offset) 
   std::vector<Reading> batch;
   batch.reserve(static_cast<std::size_t>(count));
   for (int i = 0; i < count; ++i) {
-    batch.push_back({SeriesKey{name, {}}, Sample{at_ms(offset + i), double(i)}});
+    batch.push_back(
+        {SeriesKey{name, {}}, Sample{at_ms(offset + i), static_cast<double>(i)}});
   }
   return batch;
 }
@@ -216,7 +217,7 @@ TEST_CASE("the store is safe under concurrent writes") {
       writers.emplace_back([&store, t] {
         for (int i = 0; i < 500; ++i) {
           store.record({"metric", {{"writer", std::to_string(t)}}},
-                       {at_ms(i), double(i)});
+                       {at_ms(i), static_cast<double>(i)});
         }
       });
     }
@@ -239,7 +240,7 @@ TEST_CASE("concurrent readers and writers") {
     for (int t = 0; t < 4; ++t) {
       threads.emplace_back([&store, key] {
         for (int i = 1; i <= 250; ++i) {
-          store.record(key, {at_ms(i), double(i)});
+          store.record(key, {at_ms(i), static_cast<double>(i)});
         }
       });
     }

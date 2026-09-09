@@ -140,7 +140,7 @@ public:
     return Iterator{handle_};
   }
 
-  std::default_sentinel_t end() const noexcept {
+  [[nodiscard]] std::default_sentinel_t end() const noexcept {
     return {};
   }
 

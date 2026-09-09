@@ -65,17 +65,17 @@ private:
 
   template <typename T>
   struct Model final : Concept {
-    explicit Model(T object) : object_(std::move(object)) {}
+    explicit Model(T value) : object(std::move(value)) {}
 
     [[nodiscard]] std::string render() const override {
-      return object_.render();
+      return object.render();
     }
 
     [[nodiscard]] std::unique_ptr<Concept> clone() const override {
-      return std::make_unique<Model>(object_);
+      return std::make_unique<Model>(object);
     }
 
-    T object_;
+    T object;
   };
 
   std::unique_ptr<Concept> self_;

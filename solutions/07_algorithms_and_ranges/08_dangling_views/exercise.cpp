@@ -12,6 +12,9 @@ namespace {
 template <std::ranges::range R>
 auto to_vector(R&& range) {
   std::vector<std::ranges::range_value_t<R>> result;
+  if constexpr (std::ranges::sized_range<R>) {
+    result.reserve(std::ranges::size(range));
+  }
   for (auto&& element : range) {
     result.push_back(element);
   }

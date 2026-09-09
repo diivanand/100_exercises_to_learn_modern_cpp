@@ -30,7 +30,7 @@ public:
     // to the resumer -- SYMMETRIC TRANSFER. Returning a handle from
     // await_suspend means "resume that one now", with no extra stack frame.
     struct FinalAwaiter {
-      bool await_ready() const noexcept {
+      [[nodiscard]] bool await_ready() const noexcept {
         return false;
       }
 
@@ -83,7 +83,7 @@ public:
     struct Awaiter {
       std::coroutine_handle<promise_type> handle;
 
-      bool await_ready() const noexcept {
+      [[nodiscard]] bool await_ready() const noexcept {
         return handle.done();
       }
 
@@ -92,7 +92,7 @@ public:
         return handle; // symmetric transfer into the awaited task
       }
 
-      T await_resume() {
+      [[nodiscard]] T await_resume() {
         if (handle.promise().exception) {
           std::rethrow_exception(handle.promise().exception);
         }
@@ -121,11 +121,11 @@ private:
 struct Immediate {
   int value;
 
-  bool await_ready() const noexcept {
+  [[nodiscard]] bool await_ready() const noexcept {
     return true;
   }
   void await_suspend(std::coroutine_handle<>) const noexcept {}
-  int await_resume() const noexcept {
+  [[nodiscard]] int await_resume() const noexcept {
     return value;
   }
 };
@@ -134,7 +134,7 @@ int resume_count = 0;
 
 // An awaiter that always suspends and resumes itself, counting the round trip.
 struct CountedSuspend {
-  bool await_ready() const noexcept {
+  [[nodiscard]] bool await_ready() const noexcept {
     return false;
   }
 
