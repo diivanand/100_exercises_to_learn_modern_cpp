@@ -1,0 +1,1 @@
+mcpp_discover_exercises(exercise)

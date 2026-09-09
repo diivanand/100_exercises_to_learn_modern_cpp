@@ -1,0 +1,284 @@
+#!/usr/bin/env bash
+#
+# mcpp -- the workflow driver for this course.
+#
+#   ./mcpp next                 build and run the first exercise that is not
+#                               yet passing; this is the main loop
+#   ./mcpp test [filter]        run the exercises matching a filter
+#   ./mcpp verify               run every exercise (what CI does)
+#   ./mcpp solution <filter>    diff your work against the reference solution
+#   ./mcpp list [filter]        list the exercises and where you are
+#   ./mcpp build [filter]       build without running
+#   ./mcpp format [--check]     run clang-format over the tree
+#   ./mcpp tidy [filter]        run clang-tidy over the tree
+#   ./mcpp clean                remove the build directories
+#
+# A "filter" is any substring of an exercise id, so `03`, `03_07`, `unique_ptr`
+# and `07_unique_ptr` all select 03.07. It is passed to ctest as a regex.
+
+set -euo pipefail
+
+readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly BUILD_DIR="${ROOT}/cmake-build-debug"
+readonly SOLUTION_BUILD_DIR="${ROOT}/cmake-build-solutions"
+readonly PROGRESS_FILE="${ROOT}/.mcpp-progress"
+
+if [[ -t 1 ]]; then
+  readonly BOLD=$'\033[1m' DIM=$'\033[2m' RED=$'\033[31m' GREEN=$'\033[32m'
+  readonly YELLOW=$'\033[33m' BLUE=$'\033[34m' RESET=$'\033[0m'
+else
+  readonly BOLD='' DIM='' RED='' GREEN='' YELLOW='' BLUE='' RESET=''
+fi
+
+die() {
+  printf '%smcpp: %s%s\n' "${RED}" "$*" "${RESET}" >&2
+  exit 1
+}
+
+# A few exercises start out as programs that never terminate -- a worker thread
+# with no cancellation check, a wait nobody notifies. Running them with a
+# deadline turns "the terminal is hung" into a message that says so.
+readonly DEADLINE_SECONDS=30
+
+run_exercise() {
+  local binary="$1"
+  perl -e 'alarm shift; exec @ARGV or exit 127' "${DEADLINE_SECONDS}" "${binary}"
+  local status=$?
+  if [[ ${status} -eq 142 || ${status} -eq 14 ]]; then
+    printf '\n%smcpp: it did not finish within %ss -- this exercise starts as a\n'      "${YELLOW}" "${DEADLINE_SECONDS}"
+    printf '      program that never terminates. Read the header comment.%s\n' "${RESET}"
+    return 1
+  fi
+  return ${status}
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || die "'$1' is not on your PATH. $2"
+}
+
+# --- exercise inventory ------------------------------------------------------
+
+# Prints "<id>\t<directory>" for every exercise, in course order.
+#   id        = 03_07_unique_ptr   (chapter number, exercise number, name)
+#   directory = exercises/03_ownership/07_unique_ptr
+all_exercises() {
+  local dir chapter name chapter_number
+  while IFS= read -r dir; do
+    chapter="$(basename "$(dirname "${dir}")")"
+    name="$(basename "${dir}")"
+    chapter_number="${chapter%%_*}"
+    printf '%s\t%s\n' "${chapter_number}_${name}" "${dir}"
+  done < <(find "${ROOT}/exercises" -mindepth 2 -maxdepth 2 -type d | sort)
+}
+
+resolve_one() {
+  local filter="$1" matches
+  matches="$(all_exercises | grep -- "${filter}" || true)"
+  [[ -n "${matches}" ]] || die "no exercise matches '${filter}'. Try ./mcpp list"
+  if [[ "$(wc -l <<<"${matches}")" -gt 1 ]]; then
+    printf '%smcpp: '\''%s'\'' matches several exercises:%s\n' \
+      "${YELLOW}" "${filter}" "${RESET}" >&2
+    cut -f1 <<<"${matches}" | sed 's/^/  /' >&2
+    exit 1
+  fi
+  printf '%s\n' "${matches}"
+}
+
+# --- build -------------------------------------------------------------------
+
+configure() {
+  local dir="$1" preset="$2"
+  if [[ ! -f "${dir}/CMakeCache.txt" ]]; then
+    printf '%s==> configuring (%s)%s\n' "${BOLD}" "${preset}" "${RESET}"
+    cmake --preset "${preset}" >/dev/null || die "cmake configure failed"
+  fi
+}
+
+# Builds one target, letting the compiler's diagnostics through untouched.
+build_target() {
+  local target="$1"
+  configure "${BUILD_DIR}" debug
+  cmake --build "${BUILD_DIR}" --target "${target}"
+}
+
+# --- commands ----------------------------------------------------------------
+
+cmd_list() {
+  local filter="${1:-}" id dir current
+  current="$(cat "${PROGRESS_FILE}" 2>/dev/null || true)"
+  local last_chapter=''
+  while IFS=$'\t' read -r id dir; do
+    [[ -z "${filter}" || "${id}" == *"${filter}"* ]] || continue
+    local chapter
+    chapter="$(basename "$(dirname "${dir}")")"
+    if [[ "${chapter}" != "${last_chapter}" ]]; then
+      printf '\n%s%s%s\n' "${BOLD}" "${chapter//_/ }" "${RESET}"
+      last_chapter="${chapter}"
+    fi
+    local marker='  '
+    [[ "${id}" == "${current}" ]] && marker="${BLUE}->${RESET}"
+    printf '  %s %s\n' "${marker}" "${id}"
+  done < <(all_exercises)
+  printf '\n'
+}
+
+cmd_build() {
+  local filter="${1:-}"
+  configure "${BUILD_DIR}" debug
+  if [[ -z "${filter}" ]]; then
+    cmake --build "${BUILD_DIR}" --target exercises -- -k 0
+  else
+    local id dir
+    IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+    build_target "ex_${id}"
+  fi
+}
+
+cmd_test() {
+  local filter="${1:-}"
+  if [[ -z "${filter}" ]]; then
+    cmd_verify
+    return
+  fi
+  local id dir
+  IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+  printf '%s==> %s%s\n%s   %s%s\n' \
+    "${BOLD}" "${id}" "${RESET}" "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+  build_target "ex_${id}"
+  run_exercise "${BUILD_DIR}/bin/exercises/$(basename "$(dirname "${dir}")")/ex_${id}"
+}
+
+cmd_verify() {
+  configure "${BUILD_DIR}" debug
+  # Some exercises deliberately do not compile until you have done the work
+  # (making a function `constexpr`, say). `-k 0` tells the generator to keep
+  # going after a failure so that one unfinished exercise does not hide the
+  # state of the other ninety-nine.
+  cmake --build "${BUILD_DIR}" --target exercises -- -k 0 || true
+  ctest --test-dir "${BUILD_DIR}" --output-on-failure
+}
+
+# The main loop: walk the exercises in order and stop at the first one that
+# does not build or does not pass. That is the one you are working on.
+cmd_next() {
+  local id dir chapter binary
+  while IFS=$'\t' read -r id dir; do
+    chapter="$(basename "$(dirname "${dir}")")"
+    binary="${BUILD_DIR}/bin/exercises/${chapter}/ex_${id}"
+
+    if ! build_target "ex_${id}" >/dev/null 2>&1; then
+      printf '%s==> %s does not compile%s\n\n' "${RED}" "${id}" "${RESET}"
+      printf '%s\n' "${id}" >"${PROGRESS_FILE}"
+      build_target "ex_${id}" || true
+      printf '\n%s    %s/exercise.cpp%s\n' \
+        "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+      return 1
+    fi
+
+    if ! (run_exercise "${binary}" >/dev/null 2>&1); then
+      printf '%s==> %s%s\n%s    %s/exercise.cpp%s\n\n' \
+        "${BOLD}" "${id}" "${RESET}" "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+      printf '%s\n' "${id}" >"${PROGRESS_FILE}"
+      run_exercise "${binary}" || true
+      return 1
+    fi
+
+    printf '%s  ok%s %s\n' "${GREEN}" "${RESET}" "${id}"
+  done < <(all_exercises)
+
+  printf '\n%sEvery exercise passes. That is the whole course.%s\n' \
+    "${GREEN}${BOLD}" "${RESET}"
+  rm -f "${PROGRESS_FILE}"
+}
+
+cmd_solution() {
+  local filter="${1:-$(cat "${PROGRESS_FILE}" 2>/dev/null || true)}"
+  [[ -n "${filter}" ]] || die "usage: ./mcpp solution <filter>"
+  local id dir solution
+  IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+  solution="${ROOT}/solutions/$(basename "$(dirname "${dir}")")/$(basename "${dir}")/exercise.cpp"
+  [[ -f "${solution}" ]] || die "no solution checked in for ${id}"
+
+  printf '%s==> %s: your work vs. the reference solution%s\n\n' \
+    "${BOLD}" "${id}" "${RESET}"
+  # The reference solutions drop the long teaching comments, so a plain diff is
+  # noisy. `diff` still beats reading two files side by side.
+  diff --unified=3 --label 'yours' --label 'reference' \
+    "${dir}/exercise.cpp" "${solution}" || true
+}
+
+cmd_format() {
+  need clang-format "Install it with: brew install llvm"
+  # A while-read loop rather than `mapfile`: macOS still ships bash 3.2.
+  local -a files=()
+  local file
+  while IFS= read -r file; do
+    files+=("${file}")
+  done < <(find "${ROOT}/exercises" "${ROOT}/solutions" \
+    \( -name '*.cpp' -o -name '*.hpp' \) | sort)
+
+  if [[ "${1:-}" == "--check" ]]; then
+    clang-format --dry-run --Werror "${files[@]}"
+    printf '%sformatting is clean%s\n' "${GREEN}" "${RESET}"
+  else
+    clang-format -i "${files[@]}"
+    printf '%sformatted %d files%s\n' "${GREEN}" "${#files[@]}" "${RESET}"
+  fi
+}
+
+cmd_tidy() {
+  need clang-tidy "Install it with: brew install llvm"
+  configure "${BUILD_DIR}" debug
+  local filter="${1:-}"
+  local -a files=()
+  if [[ -n "${filter}" ]]; then
+    local id dir
+    IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+    files=("${dir}/exercise.cpp")
+  else
+    local file
+    while IFS= read -r file; do
+      files+=("${file}")
+    done < <(find "${ROOT}/exercises" -name '*.cpp' | sort)
+  fi
+  clang-tidy -p "${BUILD_DIR}" "${files[@]}"
+}
+
+cmd_clean() {
+  rm -rf "${ROOT}"/cmake-build-*
+  rm -f "${PROGRESS_FILE}"
+  printf '%sremoved build directories%s\n' "${GREEN}" "${RESET}"
+}
+
+cmd_solutions_check() {
+  # Used by CI to prove every reference solution actually passes.
+  configure "${SOLUTION_BUILD_DIR}" solutions
+  cmake --build "${SOLUTION_BUILD_DIR}" --target solutions
+  ctest --test-dir "${SOLUTION_BUILD_DIR}" --output-on-failure -R '^solution/'
+}
+
+usage() {
+  sed -n '3,20p' "${BASH_SOURCE[0]}" | sed 's|^# \{0,1\}||'
+}
+
+main() {
+  need cmake "Install it with: brew install cmake"
+  local command="${1:-next}"
+  shift || true
+  case "${command}" in
+    next) cmd_next "$@" ;;
+    test | t) cmd_test "$@" ;;
+    verify) cmd_verify "$@" ;;
+    build) cmd_build "$@" ;;
+    list | ls) cmd_list "$@" ;;
+    solution | sol) cmd_solution "$@" ;;
+    format | fmt) cmd_format "$@" ;;
+    tidy) cmd_tidy "$@" ;;
+    clean) cmd_clean "$@" ;;
+    solutions-check) cmd_solutions_check "$@" ;;
+    help | -h | --help) usage ;;
+    *) die "unknown command '${command}'. Try ./mcpp help" ;;
+  esac
+}
+
+main "$@"

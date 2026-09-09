@@ -1,0 +1,92 @@
+# clang-tidy is the second-cheapest static analyser after the compiler, and it
+# knows the C++ Core Guidelines by name: every `cppcoreguidelines-*` check maps
+# to a numbered rule at
+# https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
+#
+# Run it with:  ./mcpp tidy [filter]
+#
+# NOTE ON THE DISABLED CHECKS. Four of them are switched off for THIS
+# repository and would be worth having on in a real project. Each exercise is
+# one self-contained translation unit with no header, which makes them noise
+# here:
+#
+#   misc-use-internal-linkage
+#       every free function in an exercise is used only by the tests below it,
+#       so this fires on all of them and says nothing;
+#   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
+#       `v[i]` is how half these exercises teach what a container does -- the
+#       check is right that .at() is safer, and 06.01 is about that difference;
+#   modernize-use-scoped-lock, modernize-use-designated-initializers
+#       some exercises deliberately show the older spelling before introducing
+#       the newer one (10.03, 02.05);
+#   readability-redundant-member-init
+#       `Timestamp at{};` is redundant for this particular type, and the course
+#       teaches "always initialise your members" -- consistency wins over the
+#       one character saved;
+#   bugprone-unchecked-optional-access
+#       it cannot see a test's preconditions. Note that the UB form
+#       (`opt->member` on an empty optional) has been removed everywhere in
+#       favour of `.value()`, which throws and so is reported as a test failure
+#       rather than corrupting memory;
+#   cppcoreguidelines-missing-std-forward
+#       an algorithm taking `R&&` and iterating it without forwarding is the
+#       standard ranges idiom (that is how std::ranges::sort is declared), and
+#       conflicts with the general rule this check enforces;
+#   bugprone-use-after-move
+#       inspecting a moved-from object is the entire point of 03.02 and 03.03 --
+#       the tests assert what "valid but unspecified" looks like. Outside a
+#       course this check is one of the most valuable in the set;
+#   cppcoreguidelines-avoid-non-const-global-variables
+#       several exercises count constructions and copies in a file-scope
+#       counter, which is how the tests observe what the compiler did.
+#
+# YAML note: `Checks` is a folded scalar, so `#` inside it is NOT a comment --
+# it becomes part of the check list. Keep explanations up here.
+---
+Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,-misc-non-private-member-variables-in-classes,-misc-use-anonymous-namespace,-misc-use-internal-linkage,-misc-include-cleaner,-modernize-use-trailing-return-type,-modernize-use-scoped-lock,-modernize-use-designated-initializers,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-redundant-member-init,-bugprone-unchecked-optional-access,-cppcoreguidelines-missing-std-forward,-bugprone-use-after-move,-cppcoreguidelines-avoid-non-const-global-variables'
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+FormatStyle: file
+
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  # The course uses kCamelCase for constants and enumerators throughout --
+  # kRead, kEmpty, kTableSize -- so that is what the checker should expect.
+  # Deliberately NOT ConstexprVariable*: clang-tidy resolves that before
+  # LocalConstant*, so it would demand a `k` on local constexprs too.
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: 'k'
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantPrefix
+    value: 'k'
+  - key: readability-identifier-naming.LocalConstantCase
+    value: lower_case
+  - key: readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.StaticConstantPrefix
+    value: 'k'
