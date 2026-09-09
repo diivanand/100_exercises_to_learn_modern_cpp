@@ -18,7 +18,9 @@ constexpr std::uint32_t round_up_to_power_of_two(std::uint32_t value) {
 }
 
 constexpr int bits_needed(std::uint32_t value) {
-  return static_cast<int>(std::bit_width(value));
+  // bit_width returns the same width as its argument, so on a uint32_t the
+  // result is already an int -- no cast needed.
+  return std::bit_width(value);
 }
 
 // bit_cast checks at compile time that both types are trivially copyable and

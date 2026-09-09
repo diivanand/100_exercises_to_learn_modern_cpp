@@ -7,14 +7,16 @@
 
 // Returns a reference to one of its arguments -- which is why a caller must
 // not pass a temporary and keep the result. std::max has the same hazard.
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 template <typename T>
 const T& larger(const T& a, const T& b) {
   return a < b ? b : a;
 }
 
+// By value on purpose: this is the textbook shape for a trailing return type,
+// and the arguments are usually numbers. A `const T&` version would avoid the
+// copy for strings at the cost of obscuring the point.
 template <typename T, typename U>
-auto add(T a, U b) -> decltype(a + b) {
+auto add(T a, U b) -> decltype(a + b) { // NOLINT(performance-unnecessary-value-param)
   return a + b;
 }
 

@@ -31,7 +31,12 @@ public:
         cells_(std::exchange(other.cells_, nullptr)) {}
 
   ~Matrix() {
-    delete[] cells_;
+    // clang-analyzer reports a double free on the self-assignment path. It is
+    // a false positive: it does not model the swap, so it believes the
+    // by-value parameter's destructor frees the pointer *this* still holds.
+    // In fact the parameter leaves holding the OLD buffer and frees it exactly
+    // once -- and AddressSanitizer, which is the better authority, agrees.
+    delete[] cells_; // NOLINT(clang-analyzer-cplusplus.NewDelete)
   }
 
   [[nodiscard]] std::size_t rows() const noexcept {

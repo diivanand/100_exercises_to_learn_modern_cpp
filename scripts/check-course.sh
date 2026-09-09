@@ -37,9 +37,12 @@ note() { printf '  %sFAIL%s %s\n' "${RED}" "${RESET}" "$*"; failures=$((failures
 ok() { printf '  %s ok %s %s\n' "${GREEN}" "${RESET}" "$*"; }
 
 printf '%s==> configuring%s\n' "${BOLD}" "${RESET}"
+# Always reconfigure. CMake is idempotent here, and reusing a directory that
+# was configured with different options is how this script starts reporting
+# failures that are really its own.
 cmake -S "${ROOT}" -B "${BUILD}" -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ \
-  -DMCPP_BUILD_SOLUTIONS=ON >/dev/null || exit 1
+  -DMCPP_BUILD_SOLUTIONS=ON -DMCPP_BUILD_EXERCISES=ON >/dev/null || exit 1
 
 printf '\n%s==> solutions must build and pass%s\n' "${BOLD}" "${RESET}"
 if ! cmake --build "${BUILD}" --target solutions -- -k 0 >/dev/null 2>&1; then

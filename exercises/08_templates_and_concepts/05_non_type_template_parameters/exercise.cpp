@@ -139,8 +139,8 @@ TEST_CASE("tagging a value with a compile-time name") {
   constexpr Tagged<"width", int> width{1920};
   constexpr Tagged<"height", int> height{1080};
 
-  static_assert(width.name() == "width");
-  static_assert(height.name() == "height");
+  static_assert(decltype(width)::name() == "width");
+  static_assert(decltype(height)::name() == "height");
 
   // Different names make different types, so these cannot be confused.
   static_assert(!std::is_same_v<decltype(width), decltype(height)>);

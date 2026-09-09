@@ -34,6 +34,12 @@
 //    Give `HttpConfig` sensible defaults, then build the configurations the
 //    tests describe using designated initialisers.
 //
+//  NOTE  This exercise starts as a compile error, and the error is the point:
+//        you may only leave a member out of a designated initialiser if it has
+//        a default. Until HttpConfig's members have one, omitting `.host` is
+//        `-Wmissing-designated-field-initializers` -- which is the compiler
+//        telling you why the defaults matter.
+//
 //  RUN IT
 //    ./mcpp test 02_05
 //

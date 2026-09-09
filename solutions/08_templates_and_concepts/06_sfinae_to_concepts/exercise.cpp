@@ -19,9 +19,8 @@ std::string describe(T) {
 
 // By value and unnamed: these three overloads exist to show which one
 // overload resolution picks, and none of them looks at the argument.
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 template <std::convertible_to<std::string_view> T>
-std::string describe(T) {
+std::string describe(T) { // NOLINT(performance-unnecessary-value-param)
   return "string-like";
 }
 
