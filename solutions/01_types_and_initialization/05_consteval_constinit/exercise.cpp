@@ -13,6 +13,11 @@ consteval std::uint32_t checksum(std::string_view text) {
   return hash;
 }
 
+// cert-err58 warns that a throwing initialiser cannot be caught here. It
+// cannot throw: `checksum` is consteval, so the value is computed by the
+// compiler and `constinit` requires exactly that -- which is the whole point
+// of using constinit rather than a plain global.
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization,cert-err58-cpp,readability-identifier-naming)
 constinit std::uint32_t kGeneration = checksum("v1");
 
 struct Version {

@@ -97,7 +97,7 @@ TEST_CASE("std::tie gives lexicographic ordering for free") {
   CHECK_FALSE(comes_before(a, a));
 
   std::vector<Employee> employees = {c, b, a};
-  std::sort(employees.begin(), employees.end(), comes_before);
+  std::ranges::sort(employees, comes_before);
   CHECK(employees[0].forename == "Ada");
   CHECK(employees[2].surname == "Turing");
 }

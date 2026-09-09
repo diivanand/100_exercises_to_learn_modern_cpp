@@ -49,6 +49,9 @@ Vector(Ts...) -> Vector<sizeof...(Ts)>;
 template <std::size_t N>
 struct FixedString {
   // consteval: a FixedString only ever exists at compile time.
+  // The `const char (&)[N]` parameter is what lets N be deduced from a string
+  // literal, so it cannot be a std::array here.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   consteval FixedString(const char (&literal)[N]) {
     std::copy_n(literal, N, data.begin());
   }
@@ -64,6 +67,7 @@ struct FixedString {
 };
 
 template <std::size_t N>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 FixedString(const char (&)[N]) -> FixedString<N>;
 
 template <FixedString Name, typename T>
@@ -77,7 +81,7 @@ struct Tagged {
 
 TEST_CASE("the dimension is part of the type") {
   constexpr Vector<3> a{1.0, 2.0, 3.0};
-  static_assert(a.size() == 3);
+  static_assert(Vector<3>::size() == 3);
   static_assert(a[1] == 2.0);
 
   constexpr Vector<3> b{4.0, 5.0, 6.0};
@@ -88,7 +92,7 @@ TEST_CASE("the dimension is part of the type") {
 
 TEST_CASE("CTAD deduces the dimension from the arguments") {
   constexpr Vector v{1.0, 2.0};
-  static_assert(v.size() == 2);
+  static_assert(Vector<2>::size() == 2);
   static_assert(std::is_same_v<decltype(v), const Vector<2>>);
   CHECK(v[0] == doctest::Approx(1.0));
 }

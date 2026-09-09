@@ -201,10 +201,29 @@ cmd_solution() {
 
   printf '%s==> %s: your work vs. the reference solution%s\n\n' \
     "${BOLD}" "${id}" "${RESET}"
-  # The reference solutions drop the long teaching comments, so a plain diff is
-  # noisy. `diff` still beats reading two files side by side.
-  diff --unified=3 --label 'yours' --label 'reference' \
-    "${dir}/exercise.cpp" "${solution}" || true
+
+  # Strip each file's leading comment block before diffing. The exercise's
+  # header is the teaching material and the solution's is one line, so
+  # including them would bury the actual difference in forty lines of prose.
+  local yours reference
+  yours="$(mktemp)"
+  reference="$(mktemp)"
+  strip_header "${dir}/exercise.cpp" >"${yours}"
+  strip_header "${solution}" >"${reference}"
+
+  diff --unified=3 --label 'yours' --label 'reference' "${yours}" "${reference}" ||
+    true
+  rm -f "${yours}" "${reference}"
+}
+
+# Prints a file from its first non-comment, non-blank line onward.
+strip_header() {
+  awk '
+    started { print; next }
+    /^[[:space:]]*\/\// { next }
+    /^[[:space:]]*$/ { next }
+    { started = 1; print }
+  ' "$1"
 }
 
 cmd_format() {

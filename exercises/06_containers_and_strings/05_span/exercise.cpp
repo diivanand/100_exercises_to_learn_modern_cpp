@@ -74,6 +74,9 @@ std::vector<int> chunk_sums(std::span<const int> values, std::size_t chunk_size)
 TEST_CASE("one signature accepts every contiguous container") {
   const std::vector<int> vector = {1, 2, 3};
   const std::array<int, 3> array = {4, 5, 6};
+  // A raw C array, deliberately: the point of this test is that ONE span
+  // signature accepts it alongside a vector and a std::array.
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   const int c_array[3] = {7, 8, 9};
 
   CHECK(sum(vector) == 6);

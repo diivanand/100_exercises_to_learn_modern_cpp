@@ -5,6 +5,9 @@
 #include <type_traits>
 #include <vector>
 
+// Returns a reference to one of its arguments -- which is why a caller must
+// not pass a temporary and keep the result. std::max has the same hazard.
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 template <typename T>
 const T& larger(const T& a, const T& b) {
   return a < b ? b : a;

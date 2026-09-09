@@ -141,7 +141,7 @@ public:
     return Iterator{handle_};
   }
 
-  std::default_sentinel_t end() const noexcept {
+  [[nodiscard]] std::default_sentinel_t end() const noexcept {
     return {};
   }
 
@@ -171,7 +171,7 @@ Generator<std::string> words(std::vector<std::string> source) {
 }
 
 template <typename T>
-std::vector<T> take(Generator<T>&& generator, std::size_t count) {
+std::vector<T> take(Generator<T> generator, std::size_t count) {
   std::vector<T> result;
   for (const auto& value : generator) {
     if (result.size() == count) {

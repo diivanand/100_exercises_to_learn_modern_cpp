@@ -72,3 +72,6 @@ compile_commands.json
 # Local progress state written by ./mcpp
 # ---------------------------------------------------------------------------
 .mcpp-progress
+
+# clang-tidy / clangd scratch
+.clang-tidy.cache

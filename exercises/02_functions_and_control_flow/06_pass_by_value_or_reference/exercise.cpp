@@ -42,6 +42,7 @@
 
 #include <doctest/doctest.h>
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <utility>

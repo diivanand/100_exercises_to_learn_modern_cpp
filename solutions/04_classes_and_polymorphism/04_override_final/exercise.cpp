@@ -2,6 +2,7 @@
 #include <doctest/doctest.h>
 
 #include <memory>
+#include <numbers>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -29,7 +30,7 @@ public:
   // `const` restored, and `describe` now takes an int -- both mistakes the
   // compiler found the moment `override` was added.
   [[nodiscard]] double area() const override {
-    return 3.14159265358979 * radius_ * radius_;
+    return std::numbers::pi * radius_ * radius_;
   }
   [[nodiscard]] std::string name() const override {
     return "circle";
@@ -72,7 +73,7 @@ TEST_CASE("virtual dispatch reaches the derived implementations") {
 
   CHECK(shapes[0]->name() == "circle");
   CHECK(shapes[1]->name() == "square");
-  CHECK(total_area(shapes) == doctest::Approx(3.14159265358979 + 4.0));
+  CHECK(total_area(shapes) == doctest::Approx(std::numbers::pi + 4.0));
 }
 
 TEST_CASE("describe is overridden, not shadowed") {

@@ -103,7 +103,7 @@ public:
     return !handle_.done();
   }
 
-  const T& value() const {
+  [[nodiscard]] const T& value() const {
     return handle_.promise().current_value;
   }
 
@@ -159,6 +159,7 @@ TEST_CASE("by-value parameters live in the frame") {
   // Churn the stack and the heap, so that a reference into a destroyed
   // temporary cannot quietly survive and make a broken version look correct.
   std::vector<std::string> noise;
+  noise.reserve(64);
   for (int i = 0; i < 64; ++i) {
     noise.emplace_back(64, 'x');
   }
@@ -175,6 +176,7 @@ TEST_CASE("a generator over a temporary container") {
   auto generator = scaled(10, {1, 2, 3});
 
   std::vector<std::vector<int>> noise;
+  noise.reserve(64);
   for (int i = 0; i < 64; ++i) {
     noise.emplace_back(16, i);
   }

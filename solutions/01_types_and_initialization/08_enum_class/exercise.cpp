@@ -18,6 +18,11 @@ constexpr auto to_underlying(E value) {
   return static_cast<std::underlying_type_t<E>>(value);
 }
 
+// clang-analyzer's EnumCastOutOfRange check objects that `kRead | kWrite` (3)
+// is not a named enumerator. It is right about the letter of the standard and
+// wrong about the intent: a flags enum's values are combinations by design.
+// This is the known cost of modelling a bitmask as a scoped enum.
+// NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange)
 constexpr Permission operator|(Permission lhs, Permission rhs) {
   // The intermediate arithmetic happens in the underlying type; the result is
   // cast straight back, so no caller ever sees a bare integer.
@@ -33,6 +38,7 @@ constexpr Permission operator&(Permission lhs, Permission rhs) {
 constexpr bool has(Permission set, Permission flag) {
   return (set & flag) == flag;
 }
+// NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange)
 
 std::string describe(Permission set) {
   std::string result;

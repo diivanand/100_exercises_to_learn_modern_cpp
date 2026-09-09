@@ -88,6 +88,7 @@ private:
 //     trailing null.
 template <std::size_t N>
 struct FixedString {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   constexpr FixedString(const char (&)[N]) {}
 };
 
@@ -106,7 +107,7 @@ struct Tagged {
 
 TEST_CASE("the dimension is part of the type") {
   constexpr Vector<3> a{1.0, 2.0, 3.0};
-  static_assert(a.size() == 3);
+  static_assert(Vector<3>::size() == 3);
   static_assert(a[1] == 2.0);
 
   constexpr Vector<3> b{4.0, 5.0, 6.0};
@@ -122,7 +123,7 @@ TEST_CASE("the dimension is part of the type") {
 
 TEST_CASE("CTAD deduces the dimension from the arguments") {
   constexpr Vector v{1.0, 2.0};
-  static_assert(v.size() == 2);
+  static_assert(Vector<2>::size() == 2);
   static_assert(std::is_same_v<decltype(v), const Vector<2>>);
   CHECK(v[0] == doctest::Approx(1.0));
 }

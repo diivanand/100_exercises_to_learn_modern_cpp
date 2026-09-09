@@ -10,12 +10,12 @@
 class Resource {
 public:
   Resource() {
-    ++live_count;
+    ++live_count_;
   }
 
   // Public and virtual: deletion through a Resource* is part of the contract.
   virtual ~Resource() {
-    --live_count;
+    --live_count_;
   }
 
   Resource(const Resource&) = delete;
@@ -23,25 +23,33 @@ public:
 
   [[nodiscard]] virtual std::string kind() const = 0;
 
-  static inline int live_count = 0;
+  [[nodiscard]] static int live_count() noexcept {
+    return live_count_;
+  }
+
+private:
+  static inline int live_count_ = 0;
 };
 
 class Buffer : public Resource {
 public:
   explicit Buffer(std::size_t size) : bytes_(size, 0) {
-    ++buffer_live_count;
+    ++buffer_live_count_;
   }
   ~Buffer() override {
-    --buffer_live_count;
+    --buffer_live_count_;
   }
 
   [[nodiscard]] std::string kind() const override {
     return "buffer";
   }
 
-  static inline int buffer_live_count = 0;
+  [[nodiscard]] static int buffer_live_count() noexcept {
+    return buffer_live_count_;
+  }
 
 private:
+  static inline int buffer_live_count_ = 0;
   std::vector<unsigned char> bytes_;
 };
 
@@ -66,16 +74,16 @@ public:
 };
 
 TEST_CASE("deleting through a base pointer runs the derived destructor") {
-  CHECK(Resource::live_count == 0);
-  CHECK(Buffer::buffer_live_count == 0);
+  CHECK(Resource::live_count() == 0);
+  CHECK(Buffer::buffer_live_count() == 0);
   {
     const std::unique_ptr<Resource> resource = std::make_unique<Buffer>(1024);
     CHECK(resource->kind() == "buffer");
-    CHECK(Resource::live_count == 1);
-    CHECK(Buffer::buffer_live_count == 1);
+    CHECK(Resource::live_count() == 1);
+    CHECK(Buffer::buffer_live_count() == 1);
   }
-  CHECK(Resource::live_count == 0);
-  CHECK(Buffer::buffer_live_count == 0);
+  CHECK(Resource::live_count() == 0);
+  CHECK(Buffer::buffer_live_count() == 0);
 }
 
 TEST_CASE("a polymorphic base has a virtual destructor") {

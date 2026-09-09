@@ -118,6 +118,7 @@ TEST_CASE("the tasks really do run on other threads") {
   // Each task reports the thread it ran on. With std::launch::async they must
   // all differ from this one.
   std::vector<std::future<std::thread::id>> futures;
+  futures.reserve(4);
   for (int i = 0; i < 4; ++i) {
     futures.push_back(
         std::async(std::launch::async, [] { return std::this_thread::get_id(); }));

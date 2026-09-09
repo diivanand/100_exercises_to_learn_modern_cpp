@@ -6,6 +6,14 @@
 
 std::vector<int> make_row(std::size_t width, int fill) {
   // Parentheses: "call the (count, value) constructor", not "here is a list".
+  // Parentheses, not braces: "call the (count, value) constructor", not "here
+  // is a list".
+  //
+  // clang-tidy's modernize-return-braced-init-list check suggests
+  // `return {width, fill};` here. It is wrong, for precisely the reason this
+  // exercise exists -- and the compiler catches it, because size_t narrows to
+  // int. A static analyser's advice is advice.
+  // NOLINTNEXTLINE(modernize-return-braced-init-list)
   return std::vector<int>(width, fill);
 }
 

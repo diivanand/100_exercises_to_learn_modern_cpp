@@ -38,12 +38,53 @@
 #       course this check is one of the most valuable in the set;
 #   cppcoreguidelines-avoid-non-const-global-variables
 #       several exercises count constructions and copies in a file-scope
-#       counter, which is how the tests observe what the compiler did.
+#       counter, which is how the tests observe what the compiler did;
+#   performance-unnecessary-copy-initialization
+#       in chapter 3 the copy IS the test -- "a copy is independent of its
+#       source" cannot be checked without making one;
+#   cppcoreguidelines-special-member-functions
+#       03.01, 03.05 and 04.05 are *about* the rule of five, and their classes
+#       are deliberately shown part-way through it;
+#   readability-math-missing-parentheses
+#       fires on test expectations like `4 * 250 * 251 / 2`, where the
+#       precedence is not in doubt;
+#   misc-const-correctness, readability-convert-member-functions-to-static,
+#   cppcoreguidelines-pro-bounds-*, readability-named-parameter,
+#   performance-enum-size, misc-multiple-inheritance,
+#   bugprone-forwarding-reference-overload
+#       each fires on something an exercise demonstrates on purpose -- a raw
+#       pointer being walked (03.01), a greedy forwarding constructor (08.09),
+#       an unnamed parameter in an overload set (01.03).
+#
+# And these are switched off because they are wrong here, not merely
+# inconvenient:
+#
+#   bugprone-std-namespace-modification, cert-dcl58-cpp
+#       specialising std::formatter for your own type is explicitly permitted,
+#       and is the documented way to make a type printable (12.01, 13.01);
+#   readability-implicit-bool-conversion
+#       fires on `assert(cond && "message")`, which is the universal idiom for
+#       attaching an explanation to an assertion (05.08);
+#   cppcoreguidelines-pro-type-member-init
+#       fires on every constructor that does not name a member which
+#       default-constructs itself correctly -- roughly sixty times here, none
+#       of them a defect;
+#   cppcoreguidelines-init-variables, misc-unused-parameters
+#       both misfire on this codebase: they flag variables that are
+#       initialised and parameters that are used;
+#   bugprone-branch-clone
+#       02.02's `if constexpr` chain has two branches that legitimately do the
+#       same thing for different types, which is the point of the exercise.
+#
+# In short: this file is tuned so that `./mcpp tidy` says something useful
+# about the code YOU are writing, rather than burying it under complaints
+# about deliberately imperfect teaching material. Do not copy these disables
+# into a real project without re-reading the list.
 #
 # YAML note: `Checks` is a folded scalar, so `#` inside it is NOT a comment --
 # it becomes part of the check list. Keep explanations up here.
 ---
-Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,-misc-non-private-member-variables-in-classes,-misc-use-anonymous-namespace,-misc-use-internal-linkage,-misc-include-cleaner,-modernize-use-trailing-return-type,-modernize-use-scoped-lock,-modernize-use-designated-initializers,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-redundant-member-init,-bugprone-unchecked-optional-access,-cppcoreguidelines-missing-std-forward,-bugprone-use-after-move,-cppcoreguidelines-avoid-non-const-global-variables'
+Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,-misc-non-private-member-variables-in-classes,-misc-use-anonymous-namespace,-misc-use-internal-linkage,-misc-include-cleaner,-modernize-use-trailing-return-type,-modernize-use-scoped-lock,-modernize-use-designated-initializers,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-redundant-member-init,-bugprone-unchecked-optional-access,-cppcoreguidelines-missing-std-forward,-bugprone-use-after-move,-clang-analyzer-cplusplus.Move,-cppcoreguidelines-avoid-non-const-global-variables,-performance-unnecessary-copy-initialization,-cppcoreguidelines-special-member-functions,-readability-math-missing-parentheses,-misc-const-correctness,-readability-convert-member-functions-to-static,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-readability-named-parameter,-performance-enum-size,-misc-multiple-inheritance,-bugprone-forwarding-reference-overload,-bugprone-return-const-ref-from-parameter,-bugprone-std-namespace-modification,-cert-dcl58-cpp,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-init-variables,-misc-unused-parameters,-bugprone-branch-clone,-readability-simplify-boolean-expr'
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
@@ -54,39 +95,47 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.StructCase
     value: CamelCase
+  # The language looks for exactly this spelling when deciding that a function
+  # is a coroutine, so it is not ours to rename (chapter 11).
+  - key: readability-identifier-naming.StructIgnoredRegexp
+    value: 'promise_type'
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
   - key: readability-identifier-naming.VariableCase
     value: lower_case
+  # The course spells scalar constants and enumerators kCamelCase. Expressing
+  # that as an exemption rather than a rule is deliberate: `ConstexprVariable*`
+  # is resolved before `LocalConstant*`, so a positive rule would also demand a
+  # `k` on every local constexpr, and `kTable` reads worse than `table`.
+  - key: readability-identifier-naming.VariableIgnoredRegexp
+    value: '^k[A-Z][A-Za-z0-9]*$'
+  - key: readability-identifier-naming.GlobalVariableIgnoredRegexp
+    value: '^k[A-Z][A-Za-z0-9]*$'
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
   - key: readability-identifier-naming.PrivateMemberSuffix
     value: '_'
   - key: readability-identifier-naming.PrivateMemberCase
     value: lower_case
-  - key: readability-identifier-naming.ClassMemberSuffix
-    value: '_'
   - key: readability-identifier-naming.ClassMemberCase
     value: lower_case
+  - key: readability-identifier-naming.ClassMemberSuffix
+    value: '_'
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   # The course uses kCamelCase for constants and enumerators throughout --
   # kRead, kEmpty, kTableSize -- so that is what the checker should expect.
   # Deliberately NOT ConstexprVariable*: clang-tidy resolves that before
   # LocalConstant*, so it would demand a `k` on local constexprs too.
-  - key: readability-identifier-naming.GlobalConstantCase
-    value: CamelCase
-  - key: readability-identifier-naming.GlobalConstantPrefix
-    value: 'k'
   - key: readability-identifier-naming.EnumConstantCase
     value: CamelCase
   - key: readability-identifier-naming.EnumConstantPrefix
     value: 'k'
   - key: readability-identifier-naming.LocalConstantCase
     value: lower_case
-  - key: readability-identifier-naming.StaticConstantCase
-    value: CamelCase
-  - key: readability-identifier-naming.StaticConstantPrefix
-    value: 'k'
+  - key: readability-identifier-naming.PublicMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PublicMemberSuffix
+    value: ''

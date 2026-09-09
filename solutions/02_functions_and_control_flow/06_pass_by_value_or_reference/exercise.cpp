@@ -1,6 +1,7 @@
 // Solution -- 02.06 Choosing a parameter type
 #include <doctest/doctest.h>
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -53,12 +54,8 @@ MinMax min_max(const std::vector<int>& values) {
   }
   MinMax result{values.front(), values.front()};
   for (const int value : values) {
-    if (value < result.min) {
-      result.min = value;
-    }
-    if (value > result.max) {
-      result.max = value;
-    }
+    result.min = std::min(result.min, value);
+    result.max = std::max(result.max, value);
   }
   return result;
 }
