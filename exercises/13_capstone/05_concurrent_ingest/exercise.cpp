@@ -238,6 +238,7 @@ TEST_CASE("concurrent readers and writers") {
     std::vector<std::jthread> threads;
     threads.reserve(static_cast<std::size_t>(4));
     for (int t = 0; t < 4; ++t) {
+      // NOLINTNEXTLINE(bugprone-exception-escape)
       threads.emplace_back([&store, key] {
         for (int i = 1; i <= 250; ++i) {
           store.record(key, {at_ms(i), static_cast<double>(i)});
@@ -245,6 +246,7 @@ TEST_CASE("concurrent readers and writers") {
       });
     }
     for (int t = 0; t < 4; ++t) {
+      // NOLINTNEXTLINE(bugprone-exception-escape)
       threads.emplace_back([&store, key, &reads] {
         for (int i = 0; i < 250; ++i) {
           // The returned vector is a copy, so it stays valid however the

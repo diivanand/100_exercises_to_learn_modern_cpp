@@ -65,7 +65,11 @@ public:
   }
 
 private:
-  const std::string title_;
+  // A const member is what this exercise is about: it forces the value to be
+  // built in the initialiser list, which is why the IIFE is there. The cost is
+  // that Report is no longer assignable -- the last test checks exactly that,
+  // so it is the trade-off rather than an oversight.
+  const std::string title_; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 int parse_with_fallback(const std::string& text, int fallback) {

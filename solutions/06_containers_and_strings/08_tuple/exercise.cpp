@@ -25,7 +25,7 @@ std::tuple<int, int, std::size_t> summarise(const std::vector<int>& values) {
   if (values.empty()) {
     return {0, 0, 0};
   }
-  const auto [smallest, largest] = std::minmax_element(values.begin(), values.end());
+  const auto [smallest, largest] = std::ranges::minmax_element(values);
   return {*smallest, *largest, values.size()};
 }
 
