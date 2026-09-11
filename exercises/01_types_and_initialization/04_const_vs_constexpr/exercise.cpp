@@ -57,9 +57,10 @@ bool is_power_of_two(std::uint64_t n) {
   return n != 0 && (n & (n - 1)) == 0;
 }
 
-// TODO: `const` is not enough to use this as a std::array size on every
-// compiler and in every context, and it does not document the intent. Make it
-// `constexpr`.
+// TODO: a `const` integer initialised from a literal happens to be usable as
+// a std::array size, but only because of a special rule for integral types,
+// and it does not document the intent. Make it `constexpr`, which says what
+// you mean and works for every type.
 const std::size_t kTableSize = 8;
 
 // Fills a compile-time-sized table with factorials. Because `factorial` is a

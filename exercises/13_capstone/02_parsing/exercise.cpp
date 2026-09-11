@@ -17,9 +17,10 @@
 //     ParseError, and the caller cannot read the result without dealing with
 //     the failure.
 //
-//   * NO ALLOCATION WHILE PARSING (06.04). Everything works on string_views
-//     into the caller's buffer; a std::string is built only when a value is
-//     actually stored.
+//   * ALMOST NO ALLOCATION WHILE PARSING (06.04). The tokeniser works on
+//     string_views into the caller's buffer and allocates one small vector of
+//     views per line; the number parsing allocates nothing at all; and a
+//     std::string is built only when a value is actually stored.
 //
 //   * std::from_chars (C++17), which is the right way to parse a number from
 //     machine-readable text: no allocation, no locale, no exceptions, and it
@@ -151,6 +152,11 @@ std::vector<std::string_view> split(std::string_view text, char delimiter) {
 // Two things must hold for the parse to have succeeded: `errc` is default
 // constructed, AND the pointer reached the end of the input. Checking only the
 // first accepts "1.0x" as 1.0, which is the bug the tests look for.
+//
+// One portability wrinkle: libc++ before LLVM 20 has from_chars for integers
+// only, and signals that by not defining `__cpp_lib_to_chars`. If that is your
+// library, put the from_chars version under `#ifdef __cpp_lib_to_chars`
+// and fall back to std::strtod on a null-terminated copy in the `#else`.
 std::optional<double> parse_double(std::string_view text) {
   return std::nullopt;
 }

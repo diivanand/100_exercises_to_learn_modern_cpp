@@ -82,13 +82,18 @@ TEST_CASE("an error records where it was made") {
 }
 
 TEST_CASE("passing the location on names the real caller") {
+  // Taken two lines above the call, so the expected line is this one plus two.
+  const std::source_location call_site = std::source_location::current();
   try {
     require_positive(-1);
-    const unsigned call_line = std::source_location::current().line() - 2;
     FAIL("expected a throw");
-    (void)call_line;
   } catch (const TracedError& error) {
-    CHECK(error.where().function_name() != std::string_view{"require_positive"});
+    // The location must be the `require_positive(-1)` call above, not the
+    // `throw` inside require_positive: the line is the call's, and the
+    // function is this test, not require_positive.
+    CHECK(error.where().line() == call_site.line() + 2);
+    CHECK(std::string_view{error.where().function_name()}.find("require_positive") ==
+          std::string_view::npos);
   }
 
   CHECK_NOTHROW(require_positive(1));

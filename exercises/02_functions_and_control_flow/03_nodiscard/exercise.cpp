@@ -71,9 +71,10 @@ ParseResult parse_int(std::string_view text, int& out) {
   return ParseResult::kOk;
 }
 
-// TODO: this switch is missing a [[fallthrough]] and a case. `kEmpty` and
-// `kNotANumber` should both report "bad input", but "empty" should say so
-// first. Make the fallthrough explicit rather than accidental.
+// TODO: `kEmpty` and `kNotANumber` should both report "bad input", but the
+// empty case should say "empty: " first and then fall into the shared text.
+// Write that with a [[fallthrough]], so the fallthrough is explicit rather
+// than accidental.
 std::string describe(ParseResult result, [[maybe_unused]] std::string_view input) {
   switch (result) {
   case ParseResult::kOk:

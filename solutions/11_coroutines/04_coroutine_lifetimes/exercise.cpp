@@ -77,12 +77,11 @@ Generator<std::string> labelled(std::string prefix, std::vector<int> values) {
   }
 }
 
-// A lambda that is a coroutine has the same problem, one level up: the closure
-// object is not part of the coroutine frame, so captures die when the lambda
-// temporary does.
-//
-// The fix here is to keep the lambda alive in a named variable for as long as
-// the generator it produced.
+// The same fix again. The test passes a braced temporary for `values`, which
+// is gone by the end of the statement that created the generator -- long
+// before the first resume. A reference parameter would copy only the
+// reference into the frame; a by-value parameter gives the frame its own
+// vector, which lives exactly as long as the coroutine does.
 Generator<int> scaled(int factor, std::vector<int> values) {
   for (const int value : values) {
     co_yield value* factor;

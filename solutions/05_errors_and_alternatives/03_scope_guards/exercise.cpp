@@ -4,11 +4,18 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 template <typename Action>
 class ScopeExit {
+  // A destructor is implicitly noexcept, so an action that throws from it is
+  // std::terminate. Saying so here turns that into a compile error, and tells
+  // the caller to write `[&]() noexcept { ... }`.
+  static_assert(std::is_nothrow_invocable_v<Action&>,
+                "a scope guard's action must not throw");
+
 public:
   explicit ScopeExit(Action action) : action_(std::move(action)) {}
 
@@ -34,6 +41,9 @@ private:
 
 template <typename Action>
 class ScopeFail {
+  static_assert(std::is_nothrow_invocable_v<Action&>,
+                "a scope guard's action must not throw");
+
 public:
   explicit ScopeFail(Action action)
       : action_(std::move(action)), exceptions_on_entry_(std::uncaught_exceptions()) {}
@@ -116,10 +126,10 @@ private:
 
 void write_record(Journal& journal, const std::string& name,
                   const std::vector<int>& values, int& attempts) {
-  const ScopeExit count_attempt{[&attempts] { ++attempts; }};
+  const ScopeExit count_attempt{[&attempts]() noexcept { ++attempts; }};
 
   journal.begin(name);
-  const ScopeFail rollback{[&journal] { journal.abort(); }};
+  const ScopeFail rollback{[&journal]() noexcept { journal.abort(); }};
 
   for (const int value : values) {
     journal.append(value);
@@ -130,7 +140,7 @@ void write_record(Journal& journal, const std::string& name,
 TEST_CASE("ScopeExit runs on the way out") {
   int calls = 0;
   {
-    const ScopeExit guard{[&calls] { ++calls; }};
+    const ScopeExit guard{[&calls]() noexcept { ++calls; }};
     CHECK(calls == 0);
   }
   CHECK(calls == 1);
@@ -139,7 +149,7 @@ TEST_CASE("ScopeExit runs on the way out") {
 TEST_CASE("a released guard does nothing") {
   int calls = 0;
   {
-    ScopeExit guard{[&calls] { ++calls; }};
+    ScopeExit guard{[&calls]() noexcept { ++calls; }};
     guard.release();
   }
   CHECK(calls == 0);
@@ -149,7 +159,7 @@ TEST_CASE("ScopeExit runs even when an exception is propagating") {
   int calls = 0;
   CHECK_THROWS_AS(
       [&calls] {
-        const ScopeExit guard{[&calls] { ++calls; }};
+        const ScopeExit guard{[&calls]() noexcept { ++calls; }};
         throw std::runtime_error{"boom"};
       }(),
       std::runtime_error);
@@ -160,13 +170,13 @@ TEST_CASE("ScopeFail runs only on the failure path") {
   int failures = 0;
 
   {
-    const ScopeFail guard{[&failures] { ++failures; }};
+    const ScopeFail guard{[&failures]() noexcept { ++failures; }};
   }
   CHECK(failures == 0);
 
   CHECK_THROWS_AS(
       [&failures] {
-        const ScopeFail guard{[&failures] { ++failures; }};
+        const ScopeFail guard{[&failures]() noexcept { ++failures; }};
         throw std::runtime_error{"boom"};
       }(),
       std::runtime_error);
@@ -184,6 +194,7 @@ TEST_CASE("write_record commits or aborts, and always counts the attempt") {
 
   CHECK_THROWS_AS(write_record(journal, "bad", {1, -1}, attempts), std::invalid_argument);
   CHECK(journal.records().size() == 1);
+  // The journal must be usable again -- the aborted record left no trace.
   CHECK(journal.in_progress() == false);
   CHECK(attempts == 2);
 

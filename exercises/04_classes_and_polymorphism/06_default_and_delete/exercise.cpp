@@ -7,11 +7,14 @@
 //
 //      Foo() {}            // user-PROVIDED: Foo is not trivial, and
 //                          // `Foo f{};` leaves members uninitialised
-//      Foo() = default;    // user-DECLARED: still trivial, still an aggregate
-//                          // candidate, and value-initialisation zeroes it
+//      Foo() = default;    // user-DECLARED: still trivial, and
+//                          // value-initialisation (`Foo f{};`) zeroes it
 //
 //  That difference decides whether a type is trivially copyable, whether it
 //  can live in a `constexpr` variable, and whether memcpy-based code is legal.
+//  (One thing a defaulted constructor does *not* preserve, since C++20: any
+//  user-declared constructor makes the class a non-aggregate, so `Foo{1, 2}`
+//  stops working. Leave the constructor out entirely if you want that.)
 //
 //  `= delete` removes a function. Two uses:
 //

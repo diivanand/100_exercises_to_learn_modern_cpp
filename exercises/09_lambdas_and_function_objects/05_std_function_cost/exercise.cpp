@@ -14,7 +14,7 @@
 //     heap-allocated on every copy.
 //   * A COPY of whatever it holds, whenever it is copied.
 //
-//  So the rule (Core Guidelines F.50, F.51):
+//  So the rule (Core Guidelines T.40 covers the first case):
 //
 //      TEMPLATE PARAMETER when the callable is known at the call site.
 //          template <typename F> void for_each(F f);
@@ -24,10 +24,10 @@
 //          different callables must live in the same container, or when you
 //          want the function definition in a .cpp file.
 //
-//  C++23 adds `std::function_ref` and `std::move_only_function` for the cases
-//  std::function handles badly (non-owning, and move-only callables
-//  respectively). Until then, a template parameter covers the first and a
-//  hand-rolled type the second.
+//  C++23 adds `std::move_only_function` and C++26 adds `std::function_ref`
+//  for the cases std::function handles badly (move-only callables, and
+//  non-owning references to a callable, respectively). Until then, a
+//  hand-rolled type covers the first and a template parameter the second.
 //
 //  TASK
 //    Change the signatures that should be templates, keep the ones that

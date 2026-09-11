@@ -22,9 +22,11 @@
 //
 //  Two rules that catch people out:
 //
-//   * `<=>` does NOT generate `==`. Equality can often be computed faster
-//     (compare sizes first), so the standard keeps them separate. Default them
-//     both, or define both.
+//   * A user-PROVIDED `<=>` does NOT generate `==`. Equality can often be
+//     computed faster (compare sizes first), so the standard keeps them
+//     separate: write `<=>` by hand and you must write `==` too. Only a
+//     DEFAULTED `<=>` (`= default`) implicitly declares a defaulted `==` as
+//     well.
 //
 //   * Defaulting `==` gives you `!=`; defaulting `<=>` gives you the four
 //     relational operators. You write two lines and get six operators.

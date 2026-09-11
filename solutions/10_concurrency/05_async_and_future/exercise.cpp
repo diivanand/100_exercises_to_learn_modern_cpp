@@ -6,23 +6,26 @@
 #include <future>
 #include <memory>
 #include <numeric>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
-long parallel_sum(const std::vector<int>& values, int parts) {
+long parallel_sum(const std::vector<int>& values, int parts,
+                  std::span<std::thread::id> ran_on) {
   std::vector<std::future<long>> futures;
   const std::size_t chunk = values.size() / static_cast<std::size_t>(parts);
 
   for (int p = 0; p < parts; ++p) {
     const std::size_t begin = static_cast<std::size_t>(p) * chunk;
     const std::size_t end = (p == parts - 1) ? values.size() : begin + chunk;
-    // std::launch::async, explicitly: the default lets the implementation run
-    // the task lazily on the calling thread, which is not what "parallel"
-    // means.
-    futures.push_back(std::async(std::launch::async, [&values, begin, end] {
+    // std::launch::async, explicitly: deferred runs the task lazily on the
+    // calling thread, and the default policy lets the implementation choose
+    // to do the same -- neither is what "parallel" means.
+    futures.push_back(std::async(std::launch::async, [&values, ran_on, p, begin, end] {
+      ran_on[static_cast<std::size_t>(p)] = std::this_thread::get_id();
       long total = 0;
       for (std::size_t i = begin; i < end; ++i) {
         total += values[i];
@@ -71,23 +74,24 @@ std::future<std::string> fetch(int id) {
 TEST_CASE("parallel_sum adds up") {
   std::vector<int> values(1000);
   std::iota(values.begin(), values.end(), 1);
+  std::vector<std::thread::id> ran_on(7);
 
   const long expected = 1000L * 1001L / 2L;
-  CHECK(parallel_sum(values, 4) == expected);
-  CHECK(parallel_sum(values, 1) == expected);
-  CHECK(parallel_sum(values, 7) == expected);
+  CHECK(parallel_sum(values, 4, ran_on) == expected);
+  CHECK(parallel_sum(values, 1, ran_on) == expected);
+  CHECK(parallel_sum(values, 7, ran_on) == expected);
 }
 
-TEST_CASE("the tasks really do run on other threads") {
-  std::vector<std::future<std::thread::id>> futures;
-  futures.reserve(4);
-  for (int i = 0; i < 4; ++i) {
-    futures.push_back(
-        std::async(std::launch::async, [] { return std::this_thread::get_id(); }));
-  }
+TEST_CASE("the chunks really run on other threads") {
+  const std::vector<int> values(1000, 1);
+  std::vector<std::thread::id> ran_on(4);
+  CHECK(parallel_sum(values, 4, ran_on) == 1000);
 
-  for (auto& future : futures) {
-    CHECK(future.get() != std::this_thread::get_id());
+  // With std::launch::async every chunk ran somewhere else. With deferred --
+  // and, on some implementations, with the default policy -- they all ran
+  // right here, one after another, inside get().
+  for (const auto id : ran_on) {
+    CHECK(id != std::this_thread::get_id());
   }
 }
 

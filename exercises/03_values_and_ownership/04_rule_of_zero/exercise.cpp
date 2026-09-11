@@ -107,9 +107,11 @@ TEST_CASE("moving really moves") {
   Document source{"Big", {"a", "b", "c"}};
   const Document target = std::move(source);
   CHECK(target.paragraph_count() == 3);
-  // Not a guarantee of Document -- a guarantee of std::vector's move
-  // constructor, which Document now inherits for free.
-  CHECK(source.paragraph_count() == 0);
+  // `source` is valid but unspecified (see 03.02): asserting it is empty would
+  // be testing the library. What Document guarantees is that the moved-from
+  // object can still be assigned to and destroyed.
+  source = Document{"Small", {"z"}};
+  CHECK(source.paragraph_count() == 1);
 }
 
 TEST_CASE("rule of zero survives adding a member") {

@@ -25,8 +25,10 @@
 //     a sequence never needs a reference at all (Core Guidelines F.16).
 //
 //   * Prefer returning a value to filling in an out-parameter (F.20). Return
-//     values compose, can be `const`, cannot be forgotten, and since C++17
-//     are not copied on the way out.
+//     values compose, can be `const`, cannot be forgotten, and are cheap:
+//     since C++17 returning a temporary is guaranteed not to copy or move,
+//     and returning a named local is elided by every mainstream compiler
+//     (and moved, never copied, where it is not).
 //
 //  TASK
 //    Fix the four signatures below. The bodies are already right.

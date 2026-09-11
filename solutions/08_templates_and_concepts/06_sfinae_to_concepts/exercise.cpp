@@ -75,5 +75,6 @@ TEST_CASE("concepts are ordinary compile-time predicates") {
   static_assert(Sized<std::string>);
   static_assert(!Sized<int>);
   static_assert(SizedSequence<std::vector<int>>);
+  static_assert(!SizedSequence<int>);
   CHECK(true);
 }

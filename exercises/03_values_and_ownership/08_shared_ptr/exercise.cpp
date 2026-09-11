@@ -20,14 +20,15 @@
 //  cannot be predicted: a cache handing out entries, an observer that may
 //  outlive its subject, a node in a graph.
 //
-//  THE ALIASING TRAP: building two shared_ptrs from the same raw pointer
+//  TWO CONTROL BLOCKS: building two shared_ptrs from the same raw pointer
 //  creates two independent counts, and the object is deleted twice. If you
 //  need a second owner, copy an existing shared_ptr -- never re-wrap the
-//  pointer.
+//  pointer. (Do not confuse this with shared_ptr's *aliasing constructor*,
+//  which deliberately shares one count between two pointers.)
 //
 //  TASK
-//    Fix the three bugs in `Cache`: a double-delete, a needless second
-//    allocation, and a `use_count` that never drops.
+//    Fix the two bugs in `Cache`: a double-delete, and a needless second
+//    allocation.
 //
 //  RUN IT
 //    ./mcpp test 03_08
@@ -64,14 +65,12 @@ private:
 
 class Cache {
 public:
-  // TODO: three things are wrong here.
+  // TODO: two things are wrong here.
   //
   //  1. `new Texture{...}` followed by wrapping in a shared_ptr is two
   //     allocations. Use std::make_shared.
   //  2. `share` below re-wraps the raw pointer, creating a second control
   //     block. Return a copy of the stored shared_ptr instead.
-  //  3. `evict` erases from the map but the raw pointer copy keeps the entry
-  //     alive forever. Once (1) and (2) are fixed this disappears by itself.
   std::shared_ptr<Texture> load(const std::string& name) {
     if (const auto it = textures_.find(name); it != textures_.end()) {
       return it->second;

@@ -13,11 +13,18 @@
 //          auto f() { std::vector<int> v = ...; return v | views::filter(p); }
 //      The vector dies at the return; the view is left pointing at nothing.
 //
-//   2. A VIEW OF A TEMPORARY.
+//   2. RETURNING A VIEW, WHEN A VIEW IS WHAT THE CALLER WANTS. The library
+//      protects a pipeline over a genuine temporary: since a 2021 fix to C++20
+//      (P2415),
 //          auto view = make_vector() | views::transform(f);
-//      The temporary vector is destroyed at the end of that statement.
-//      C++20's ranges library tries hard to stop this -- `borrowed_range`,
-//      `owning_view`, `dangling` -- but it cannot catch every case.
+//      moves the vector INTO the view (an `owning_view`), so nothing dangles.
+//      That protection is keyed on the value category, and only an rvalue
+//      gets it. Give the vector a name and it is an lvalue, the pipeline is a
+//      `ref_view` over it, and the library assumes you will keep it alive.
+//      When the function has to return a lazy view (the caller may only want
+//      the first few elements), materialising is not the answer -- handing
+//      the vector to the pipeline is:
+//          return std::views::all(std::move(v)) | views::transform(f);
 //
 //   3. A VIEW THAT OUTLIVES A MODIFICATION. A view over a vector is
 //      invalidated by anything that reallocates it (06.02), exactly as an
@@ -30,15 +37,18 @@
 //     iterator when you pass it an rvalue non-borrowed range, so the mistake
 //     is a compile error at the point of use.
 //   * `views::all` on an rvalue container produces an `owning_view`, which
-//     takes the container with it -- the safe way to build a pipeline over a
-//     temporary.
+//     takes the container with it. `views::all(std::move(named))` is the way
+//     to hand a named container over to a pipeline you are about to return.
 //
 //  TASK
 //    Fix the three dangling functions.
 //
-//  NOTE  This exercise starts as a compile error, and run it under
-//        `cmake --preset asan` once it builds -- some of these bugs produce
-//        plausible answers.
+//  NOTE  This exercise starts as a compile error. Once it builds, run it
+//        under `cmake --preset asan` with
+//            ASAN_OPTIONS=detect_stack_use_after_return=1
+//        in the environment: the second bug reads a vector object that lived
+//        on a stack frame that has gone, and without that option it can print
+//        an empty range, or the right answer, by luck.
 //
 //  RUN IT
 //    ./mcpp test 07_08
@@ -51,6 +61,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -81,15 +92,20 @@ auto even_values_broken() {
   return values | std::views::filter([](int n) { return n % 2 == 0; });
 }
 
-// A pipeline over a temporary.
+// Returns a LAZY view of the doubled values. The caller wants a view here --
+// it may take only the first few -- so materialising is not the fix.
 //
-// TODO: `load()` returns a prvalue, so the vector dies at the end of the
-// statement that builds the view. Either keep the vector in a named variable,
-// or let the pipeline own it -- `std::views::all(load())` produces an
-// owning_view that carries the vector along.
+// TODO: `source` is a named local, so `source | transform` is a ref_view over
+// it, and `source` is destroyed on the way out. Give the vector to the
+// pipeline instead: `std::views::all(std::move(source))` produces an
+// owning_view that carries it along.
+auto doubled_view() {
+  std::vector<int> source = load();
+  return source | std::views::transform([](int n) { return n * 2; });
+}
+
 std::vector<int> doubled_from_source() {
-  auto view = load() | std::views::transform([](int n) { return n * 2; });
-  return to_vector(view);
+  return to_vector(doubled_view());
 }
 
 // Finds the first value above `threshold` and returns it.
@@ -108,8 +124,18 @@ TEST_CASE("even_values_broken returns something the caller can keep") {
   CHECK(to_vector(values) == std::vector<int>{2, 4, 6});
 }
 
-TEST_CASE("a pipeline over a temporary must own it") {
+TEST_CASE("a returned view must own what it refers to") {
   CHECK(doubled_from_source() == std::vector<int>{2, 4, 6, 8, 10, 12});
+  // Laziness is the point of returning a view: taking two must not touch the
+  // rest.
+  CHECK(to_vector(doubled_view() | std::views::take(2)) == std::vector<int>{2, 4});
+}
+
+TEST_CASE("a pipeline built directly on an rvalue owns it") {
+  // This one was never a bug: `load()` is an rvalue, so views::all (which the
+  // pipe operator applies for you) wraps it in an owning_view.
+  auto view = load() | std::views::transform([](int n) { return n * 2; });
+  CHECK(to_vector(view) == std::vector<int>{2, 4, 6, 8, 10, 12});
 }
 
 TEST_CASE("find_if over a temporary range") {

@@ -12,8 +12,13 @@ This is the C++ counterpart to
 
 ## Requirements
 
-- **A C++20 compiler.** Apple Clang 14+, Clang 14+, or GCC 11+.
-  On macOS, `xcode-select --install` is enough.
+- **A recent C++20 toolchain.** The course uses `std::format`, `std::jthread`
+  and the full `<ranges>`, which arrived in the standard libraries later than
+  the core language did. What CI builds, and what is known to work:
+  - GCC 13 or newer (libstdc++ 13 is the first with `<format>`);
+  - Clang 18 or newer, with either libstdc++ 13+ or libc++ 18+;
+  - macOS: Xcode 16 or newer. `xcode-select --install` is enough.
+  Older toolchains will build most chapters, but not 10, 12 or 13.
 - **CMake 3.24+** and **Ninja** — `brew install cmake ninja`.
 - Optionally **clang-format** and **clang-tidy** — `brew install llvm`.
 

@@ -2,6 +2,7 @@
 #include <doctest/doctest.h>
 
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <map>
 #include <mutex>
@@ -67,6 +68,14 @@ public:
     return entries_.size();
   }
 
+  // Hands out the readers' lock itself, for a caller that wants to keep
+  // writers out across several reads. Because it is a shared lock, any number
+  // of callers can hold one at the same time -- which is what the last test
+  // checks, and what a plain mutex could never satisfy.
+  [[nodiscard]] auto read_lock() const {
+    return std::shared_lock{mutex_};
+  }
+
 private:
   mutable std::shared_mutex mutex_;
   std::map<std::string, int> entries_;
@@ -125,4 +134,35 @@ TEST_CASE("many readers, one writer") {
   CHECK(cache.get("b") == 2);
   CHECK(cache.get("missing") == -1);
   CHECK(cache.size() == 2);
+}
+
+TEST_CASE("two readers can hold the cache at the same time") {
+  Cache cache;
+  cache.put("a", 1);
+
+  // Each reader takes the readers' lock and then waits, briefly, for the other
+  // reader to be inside too. With a shared_mutex both get in at once and the
+  // wait ends immediately. With an exclusive mutex the second reader cannot
+  // enter until the first has left, so neither ever sees the other and the
+  // check fails once the deadline passes.
+  std::atomic<int> inside{0};
+  std::atomic<bool> overlapped{false};
+  const auto reader = [&cache, &inside, &overlapped] {
+    const auto lock = cache.read_lock();
+    inside.fetch_add(1);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{2};
+    while (inside.load() < 2 && std::chrono::steady_clock::now() < deadline) {
+      std::this_thread::yield();
+    }
+    if (inside.load() == 2) {
+      overlapped.store(true);
+    }
+    inside.fetch_sub(1);
+  };
+  {
+    std::jthread first{reader};
+    std::jthread second{reader};
+  }
+
+  CHECK(overlapped.load());
 }

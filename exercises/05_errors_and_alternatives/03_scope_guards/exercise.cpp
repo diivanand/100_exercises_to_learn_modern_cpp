@@ -16,9 +16,10 @@
 //
 //  Three design details that are not obvious:
 //
-//   * The destructor must not throw, so the callable is invoked inside a
-//     try/catch that swallows -- or, better, the guard requires a noexcept
-//     callable.
+//   * The destructor must not throw. Swallowing with a try/catch hides the
+//     failure; the honest choice is to require a callable that cannot throw,
+//     and say so with a `static_assert` on `std::is_nothrow_invocable_v`, so
+//     a throwing action is a compile error rather than a std::terminate.
 //   * A guard must not be copyable: two guards running the same action is
 //     wrong. Move is optional; deleting all four is simplest and enough.
 //   * `release()` (or `dismiss()`) lets the happy path cancel the action --
@@ -156,7 +157,7 @@ void write_record(Journal& journal, const std::string& name,
 TEST_CASE("ScopeExit runs on the way out") {
   int calls = 0;
   {
-    const ScopeExit guard{[&calls] { ++calls; }};
+    const ScopeExit guard{[&calls]() noexcept { ++calls; }};
     CHECK(calls == 0);
   }
   CHECK(calls == 1);
@@ -165,7 +166,7 @@ TEST_CASE("ScopeExit runs on the way out") {
 TEST_CASE("a released guard does nothing") {
   int calls = 0;
   {
-    ScopeExit guard{[&calls] { ++calls; }};
+    ScopeExit guard{[&calls]() noexcept { ++calls; }};
     guard.release();
   }
   CHECK(calls == 0);
@@ -175,7 +176,7 @@ TEST_CASE("ScopeExit runs even when an exception is propagating") {
   int calls = 0;
   CHECK_THROWS_AS(
       [&calls] {
-        const ScopeExit guard{[&calls] { ++calls; }};
+        const ScopeExit guard{[&calls]() noexcept { ++calls; }};
         throw std::runtime_error{"boom"};
       }(),
       std::runtime_error);
@@ -186,13 +187,13 @@ TEST_CASE("ScopeFail runs only on the failure path") {
   int failures = 0;
 
   {
-    const ScopeFail guard{[&failures] { ++failures; }};
+    const ScopeFail guard{[&failures]() noexcept { ++failures; }};
   }
   CHECK(failures == 0);
 
   CHECK_THROWS_AS(
       [&failures] {
-        const ScopeFail guard{[&failures] { ++failures; }};
+        const ScopeFail guard{[&failures]() noexcept { ++failures; }};
         throw std::runtime_error{"boom"};
       }(),
       std::runtime_error);

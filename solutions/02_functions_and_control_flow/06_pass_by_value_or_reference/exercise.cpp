@@ -46,8 +46,10 @@ struct MinMax {
   int max = 0;
 };
 
-// Returned, not written through a reference. Since C++17 the result is
-// constructed directly in the caller's storage -- no copy, no move.
+// Returned, not written through a reference. `result` is a named local, so
+// this is NRVO: permitted rather than guaranteed, but every mainstream
+// compiler does it, and the fallback is a move, not a copy. (Only returning
+// a prvalue such as `return MinMax{};` has guaranteed elision since C++17.)
 MinMax min_max(const std::vector<int>& values) {
   if (values.empty()) {
     return MinMax{};

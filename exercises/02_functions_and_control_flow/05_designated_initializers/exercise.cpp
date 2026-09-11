@@ -34,11 +34,13 @@
 //    Give `HttpConfig` sensible defaults, then build the configurations the
 //    tests describe using designated initialisers.
 //
-//  NOTE  This exercise starts as a compile error, and the error is the point:
-//        you may only leave a member out of a designated initialiser if it has
-//        a default. Until HttpConfig's members have one, omitting `.host` is
-//        `-Wmissing-designated-field-initializers` -- which is the compiler
-//        telling you why the defaults matter.
+//  NOTE  On most compilers this exercise compiles and fails at run time: a
+//        member left out of a designated initialiser is value-initialised
+//        (zero, empty, false) when it has no default, which is rarely what
+//        was meant. Clang 18 and newer add a warning for exactly this,
+//        `-Wmissing-designated-field-initializers`, so there the starter is
+//        a build error instead. Either way the fix is the same: give the
+//        members defaults.
 //
 //  RUN IT
 //    ./mcpp test 02_05

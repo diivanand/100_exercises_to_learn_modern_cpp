@@ -32,8 +32,8 @@ auto pipeline(const std::vector<int>& values) {
 }
 
 std::optional<int> first_matching(const std::vector<int>& values, int threshold) {
-  // The `break` is what makes this short-circuit: nothing beyond the first hit
-  // is ever computed.
+  // Returning from inside the loop is what makes this short-circuit: nothing
+  // beyond the first hit is ever computed.
   for (const int value : pipeline(values)) {
     if (value > threshold) {
       return value;

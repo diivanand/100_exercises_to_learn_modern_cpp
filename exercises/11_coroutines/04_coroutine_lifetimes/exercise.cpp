@@ -38,8 +38,9 @@
 //    Fix the two signatures, then predict what the last two tests will say
 //    before you run them.
 //
-//  NOTE  This exercise starts as a compile error, and one of its bugs is a
-//        use-after-free -- run it under `cmake --preset asan` too.
+//  NOTE  This exercise compiles as it stands. Its bugs are use-after-frees,
+//        which may or may not show up as wrong output -- run it under
+//        `cmake --preset asan` to see them for certain.
 //
 //  RUN IT
 //    ./mcpp test 11_04

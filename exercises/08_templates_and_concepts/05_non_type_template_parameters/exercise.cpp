@@ -12,8 +12,10 @@
 //  `std::array<T, N>` is the standard's example. So is `std::span<T, Extent>`.
 //
 //  What can be a non-type parameter: integers, enums, pointers and references
-//  with linkage, `std::nullptr_t`, and -- new in C++20 -- FLOATING POINT and
-//  "structural" class types, which is what makes compile-time strings work:
+//  to objects with static storage duration (C++17 dropped the old requirement
+//  that they also have linkage), `std::nullptr_t`, and -- new in C++20 --
+//  FLOATING POINT and "structural" class types, which is what makes
+//  compile-time strings work:
 //
 //      template <FixedString Name> struct Tagged;
 //      Tagged<"width"> w;      // C++20
