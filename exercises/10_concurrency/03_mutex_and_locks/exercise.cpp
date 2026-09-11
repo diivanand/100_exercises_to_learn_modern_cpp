@@ -42,6 +42,7 @@
 #include <doctest/doctest.h>
 
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <map>
 #include <mutex>
@@ -93,7 +94,10 @@ void transfer(Account& from, Account& to, int amount) {
 //
 // TODO: use std::shared_mutex -- std::shared_lock for the readers,
 // std::unique_lock (or lock_guard) for the writer -- so that concurrent
-// lookups do not serialise behind each other.
+// lookups do not serialise behind each other. `read_lock` hands a caller the
+// readers' lock to hold for a while (to keep writers out across several
+// reads); the last test takes two of them at once, which an exclusive mutex
+// cannot allow.
 class Cache {
 public:
   void put(std::string key, int value) {
@@ -110,6 +114,10 @@ public:
   [[nodiscard]] std::size_t size() const {
     const std::lock_guard lock{mutex_};
     return entries_.size();
+  }
+
+  [[nodiscard]] auto read_lock() const {
+    return std::unique_lock{mutex_};
   }
 
 private:
@@ -173,4 +181,35 @@ TEST_CASE("many readers, one writer") {
   CHECK(cache.get("b") == 2);
   CHECK(cache.get("missing") == -1);
   CHECK(cache.size() == 2);
+}
+
+TEST_CASE("two readers can hold the cache at the same time") {
+  Cache cache;
+  cache.put("a", 1);
+
+  // Each reader takes the readers' lock and then waits, briefly, for the other
+  // reader to be inside too. With a shared_mutex both get in at once and the
+  // wait ends immediately. With an exclusive mutex the second reader cannot
+  // enter until the first has left, so neither ever sees the other and the
+  // check fails once the deadline passes.
+  std::atomic<int> inside{0};
+  std::atomic<bool> overlapped{false};
+  const auto reader = [&cache, &inside, &overlapped] {
+    const auto lock = cache.read_lock();
+    inside.fetch_add(1);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{2};
+    while (inside.load() < 2 && std::chrono::steady_clock::now() < deadline) {
+      std::this_thread::yield();
+    }
+    if (inside.load() == 2) {
+      overlapped.store(true);
+    }
+    inside.fetch_sub(1);
+  };
+  {
+    std::jthread first{reader};
+    std::jthread second{reader};
+  }
+
+  CHECK(overlapped.load());
 }

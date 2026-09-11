@@ -4,6 +4,7 @@
 #include <charconv>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <map>
 #include <optional>
 #include <string>
@@ -110,6 +111,7 @@ std::vector<std::string_view> split(std::string_view text, char delimiter) {
 // std::from_chars: no allocation, no locale, no exceptions, and it tells you
 // exactly where it stopped. The right tool for machine-readable input.
 std::optional<double> parse_double(std::string_view text) {
+#ifdef __cpp_lib_to_chars
   double value = 0.0;
   const auto [end, error] =
       std::from_chars(text.data(), text.data() + text.size(), value);
@@ -117,6 +119,18 @@ std::optional<double> parse_double(std::string_view text) {
     return std::nullopt;
   }
   return value;
+#else
+  // libc++ before LLVM 20 has from_chars for integers only, and says so by not
+  // defining __cpp_lib_to_chars. strtod needs a terminated string, so this
+  // branch pays for one small copy that the from_chars branch does not.
+  const std::string copy{text};
+  char* end = nullptr;
+  const double value = std::strtod(copy.c_str(), &end);
+  if (copy.empty() || end != copy.c_str() + copy.size()) {
+    return std::nullopt;
+  }
+  return value;
+#endif
 }
 
 std::optional<std::int64_t> parse_int(std::string_view text) {

@@ -8,7 +8,7 @@
 //      std::sort(people.begin(), people.end(),
 //                [](const Person& a, const Person& b) { return a.age < b.age; });
 //
-//  Every C++20 ranges algorithm takes an optional PROJECTION as its last
+//  Most C++20 ranges algorithms take an optional PROJECTION as their last
 //  argument: a function applied to each element before the algorithm looks at
 //  it. The comparison, the predicate and the search value all then operate on
 //  the projected value:

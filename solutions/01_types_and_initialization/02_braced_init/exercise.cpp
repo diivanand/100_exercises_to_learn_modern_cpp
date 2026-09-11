@@ -5,7 +5,6 @@
 #include <vector>
 
 std::vector<int> make_row(std::size_t width, int fill) {
-  // Parentheses: "call the (count, value) constructor", not "here is a list".
   // Parentheses, not braces: "call the (count, value) constructor", not "here
   // is a list".
   //

@@ -158,10 +158,26 @@ TEST_CASE("forwarding preserves the value category") {
 
 TEST_CASE("forward only on the last use") {
   std::vector<std::string> seen;
-  const auto record = [&seen](const Tracked& value) { seen.push_back(value.name); };
+  // By value, so that each call either copies or moves -- and the counters say
+  // which.
+  // NOLINTNEXTLINE(performance-unnecessary-value-param): by value on purpose
+  const auto record = [&seen](Tracked value) { seen.push_back(value.name); };
 
+  Tracked::reset();
   apply_twice(record, Tracked{"twice"});
   CHECK(seen == std::vector<std::string>{"twice", "twice"});
+  // The first call must copy: `value` is still needed. The second is the last
+  // use, so an rvalue argument can be moved into it.
+  CHECK(Tracked::copies() == 1);
+  CHECK(Tracked::moves() == 1);
+
+  Tracked::reset();
+  Tracked kept{"kept"};
+  apply_twice(record, kept);
+  // An lvalue belongs to the caller: neither call may move from it.
+  CHECK(kept.name == "kept");
+  CHECK(Tracked::copies() == 2);
+  CHECK(Tracked::moves() == 0);
 }
 
 TEST_CASE("a forwarding constructor must not hijack copies") {

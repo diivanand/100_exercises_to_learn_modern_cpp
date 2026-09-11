@@ -10,7 +10,8 @@
 #      for one of these to rot.
 #   3. Every starter that fails to *compile* says so in its header comment, so
 #      a learner is never staring at an error the course did not warn them
-#      about.
+#      about -- and, conversely, no header promises a compile error that the
+#      starter does not produce.
 #
 # Usage: scripts/check-course.sh
 
@@ -109,6 +110,26 @@ else
       note "${id} does not compile and has no NOTE in its header comment"
     fi
   done
+fi
+
+printf '\n%s==> starters that say they do not compile must not compile%s\n' "${BOLD}" "${RESET}"
+# The converse of the previous check. A header that promises a compile error
+# when the starter in fact builds and fails at run time sends the learner
+# looking for a diagnostic that is not there.
+lying=0
+while IFS= read -r dir; do
+  chapter="$(basename "$(dirname "${dir}")")"
+  name="$(basename "${dir}")"
+  id="${chapter%%_*}_${name}"
+  grep -qiE '^//  NOTE.*(compile error|does not compile|not compile until)' \
+    "${dir}/exercise.cpp" || continue
+  if [[ " ${uncompilable[*]-} " != *" ${id} "* ]]; then
+    note "${id} says it starts as a compile error, but it compiles"
+    lying=$((lying + 1))
+  fi
+done < <(find "${ROOT}/exercises" -mindepth 2 -maxdepth 2 -type d | sort)
+if [[ ${lying} -eq 0 ]]; then
+  ok "every NOTE is truthful"
 fi
 
 printf '\n%s==> counting%s\n' "${BOLD}" "${RESET}"

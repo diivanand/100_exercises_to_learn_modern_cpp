@@ -87,7 +87,9 @@ int require_int(const std::map<std::string, std::string>& config,
   }
 }
 
-// Reads `key`, and annotates any failure with the section it came from.
+// Reads `section.key`, and lets any failure through to the caller with its
+// type and message intact. (A real system might log here first; what it must
+// not do is change what the caller catches.)
 //
 // TODO: three bugs.
 //

@@ -7,8 +7,9 @@
 //  fails when you do not -- you cannot make `int` derive from `Drawable`.
 //
 //  Type erasure gets the same runtime dispatch without the demand. The trick
-//  is one you have already seen twice in this chapter: a public value type
-//  holding a unique_ptr to a private polymorphic implementation.
+//  combines two things this chapter has already used -- a polymorphic
+//  hierarchy behind a unique_ptr (04.05), and a class that owns it (03.07) --
+//  into a public VALUE type holding a private polymorphic implementation.
 //
 //      class Drawable {                       // public: a VALUE
 //        struct Concept { virtual ... };      // private: the interface

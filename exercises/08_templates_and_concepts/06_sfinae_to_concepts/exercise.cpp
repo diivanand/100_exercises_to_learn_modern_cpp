@@ -35,9 +35,6 @@
 //    Rewrite the SFINAE below with concepts. The behaviour must not change --
 //    only the readability, and the error messages.
 //
-//  NOTE  This exercise starts as a compile error.
-//
-//
 //  NOTE  This exercise starts as a compile error: the last test names the two
 //        concepts you are about to write.
 //

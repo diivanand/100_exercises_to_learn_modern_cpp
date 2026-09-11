@@ -21,9 +21,10 @@
 - **Every starter fails** — to compile or to pass. An exercise that already
   passes teaches nothing, and this is the most common way for the course to
   rot as the compiler or library changes underneath it.
-- **A starter that does not compile says so** in a `NOTE:` line in its header
+- **A starter that does not compile says so** in a `NOTE` line in its header
   comment, so nobody is left staring at an error the course did not warn them
-  about.
+  about. The converse is checked too: a `NOTE` that promises a compile error
+  fails the check if the starter in fact builds.
 
 ## What makes a good exercise here
 

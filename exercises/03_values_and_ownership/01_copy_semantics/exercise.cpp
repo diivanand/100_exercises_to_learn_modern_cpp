@@ -22,8 +22,10 @@
 //    the other, and destroying one leaves the other dangling. Give it real
 //    value semantics.
 //
-//  NOTE  This exercise starts as a compile error until you have written the
-//        copy operations the tests exercise.
+//  NOTE  This exercise compiles as it stands: the compiler generates the
+//        copy operations, and they copy the pointer. Expect it to fail its
+//        tests and then crash with a double free. Run it under `asan` to see
+//        the bug named precisely.
 //
 //  RUN IT
 //    ./mcpp test 03_01

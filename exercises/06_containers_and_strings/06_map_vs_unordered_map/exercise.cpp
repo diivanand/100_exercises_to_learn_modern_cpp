@@ -27,9 +27,9 @@
 //  is for writing.
 //
 //  TASK
-//    Fix the three functions below: one uses operator[] to read, one picks the
-//    wrong container, and one relies on an order that unordered_map does not
-//    have.
+//    Fix the two broken functions below: one uses operator[] to read, and one
+//    relies on an order that unordered_map does not have. The third is
+//    correct as it stands, and its comment says why.
 //
 //  RUN IT
 //    ./mcpp test 06_06

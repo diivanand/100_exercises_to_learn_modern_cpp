@@ -13,12 +13,15 @@
 //      v.erase(std::remove(v.begin(), v.end(), value), v.end());
 //
 //  Forget the `erase` and the container still has its old size, with junk at
-//  the back. That mistake is common enough that `std::remove` is [[nodiscard]]
-//  in C++20.
+//  the back. That mistake is common enough that libc++ and MSVC mark
+//  `std::remove` [[nodiscard]] as an extension, so ignoring its result warns.
 //
 //  C++20 FINALLY GAVE IT A NAME: `std::erase(v, value)` and
-//  `std::erase_if(v, predicate)`. They work on every standard container,
-//  return how many elements went, and cannot be half-written. Use them.
+//  `std::erase_if(v, predicate)` for the sequence containers (vector, deque,
+//  list, string), and `std::erase_if` alone for map, set and their unordered
+//  cousins, where erasing by value makes no sense. (`std::array` cannot
+//  change size, so it gets neither.) They return how many elements went and
+//  cannot be half-written. Use them.
 //
 //  ERASING WHILE ITERATING. `erase` returns an iterator to the element AFTER
 //  the one removed. That is what makes this loop correct:

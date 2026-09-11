@@ -17,8 +17,10 @@
 //  2. TREAT WARNINGS AS ERRORS.
 //     This project builds with -Wall -Wextra -Wconversion -Wsign-conversion
 //     ... -Werror. That is deliberate: it turns a whole class of silent bugs
-//     into build failures. `average` below contains the classic one -- an
-//     integer division that quietly throws away the fractional part.
+//     into build failures. Not every silent bug is a warning, though.
+//     `average` below contains the classic one -- an integer division that
+//     quietly throws away the fractional part -- and no compiler flags it,
+//     because every step is a legal int operation. Only the test does.
 //
 //     (If you ever need to build despite a warning, configure with
 //      -DMCPP_WARNINGS_AS_ERRORS=OFF. Use it to keep moving, not as a habit.)

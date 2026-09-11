@@ -5,7 +5,10 @@
 //  `std::unique_ptr<T>` is the rule of five (03.05), already written, correct,
 //  and free. It owns one object, it cannot be copied, it moves, and it deletes
 //  what it holds when it goes out of scope. On every implementation that
-//  matters it is the same size as a raw pointer and compiles to the same code.
+//  matters it is the same size as a raw pointer, and dereferencing or
+//  resetting it compiles to the same code. (Passing one *by value* is the one
+//  place it costs a little: the non-trivial destructor forces it through
+//  memory rather than a register on the common ABIs.)
 //
 //  Use it for:
 //   * a member that must be heap-allocated (polymorphic types, pimpl,

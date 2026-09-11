@@ -21,7 +21,7 @@
 //
 //  The ones worth memorising:
 //
-//      find / find_if / contains        is it there?
+//      find / find_if                   is it there? (C++23 adds `contains`)
 //      count / count_if                 how many?
 //      all_of / any_of / none_of        a question about every element
 //      transform                        map

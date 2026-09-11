@@ -14,7 +14,9 @@
 //  `enum class` fixes both: the enumerators are scoped (`Colour::kRed`) and
 //  there is no implicit conversion to the underlying type. You can also fix
 //  the underlying type -- `enum class Colour : std::uint8_t` -- which pins
-//  down the size and makes the enum usable in a header without a definition.
+//  down the size and layout, so the enum can cross an ABI or be packed into a
+//  struct without surprises. (A scoped enum defaults to `int` and can already
+//  be forward-declared; naming the type is what lets an *unscoped* enum be.)
 //
 //  Core Guidelines Enum.3: "Prefer class enums over 'plain' enums".
 //

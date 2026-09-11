@@ -38,7 +38,14 @@ class Wrapper {
 public:
   // C++20: the constructor is explicit exactly when the wrapped conversion is
   // not implicit. This is how std::pair, std::optional and std::tuple decide.
+  //
+  // The constraint matters: a forwarding constructor without it is a better
+  // match than the copy constructor for `Wrapper<long> b{a};` (U deduces to
+  // `Wrapper<long>&`, an exact match), and then fails trying to build a `long`
+  // from a Wrapper. Excluding our own type hands copies back to the copy
+  // constructor.
   template <typename U>
+    requires(!std::is_same_v<std::remove_cvref_t<U>, Wrapper>)
   explicit(!std::is_convertible_v<U, T>) Wrapper(U&& value)
       : value_(std::forward<U>(value)) {}
 

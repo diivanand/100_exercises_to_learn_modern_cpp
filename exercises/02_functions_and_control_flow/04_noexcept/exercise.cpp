@@ -16,9 +16,10 @@
 //
 //   * SWAP and DESTRUCTORS. Destructors are implicitly noexcept already.
 //
-//  Where it does not: ordinary functions. Adding `noexcept` everywhere buys
-//  little and locks down an interface you may want to loosen later
-//  (Core Guidelines E.12, F.6).
+//  Where it does not: ordinary functions that might genuinely fail. The
+//  rule is "declare `noexcept` when the function cannot or must not throw"
+//  (Core Guidelines F.6, E.12), not "sprinkle it everywhere": once it is on
+//  a public interface, taking it off again breaks callers who relied on it.
 //
 //  `noexcept` is also an *operator*: `noexcept(expr)` is a compile-time bool
 //  saying whether `expr` can throw. That is how the library detects your move

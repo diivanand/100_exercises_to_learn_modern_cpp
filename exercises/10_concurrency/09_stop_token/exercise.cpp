@@ -32,7 +32,9 @@
 //  TASK
 //    Make the three workers cancellable.
 //
-//  NOTE  This exercise starts as a compile error.
+//  NOTE  This exercise compiles as it stands, and then never finishes: the
+//        workers have no way to be told to stop. `./mcpp test` kills it
+//        after 30 seconds and says so. That hang is the bug.
 //
 //  RUN IT
 //    ./mcpp test 10_09

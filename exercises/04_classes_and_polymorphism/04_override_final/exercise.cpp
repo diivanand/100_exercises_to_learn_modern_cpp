@@ -30,7 +30,7 @@
 //     arguments are resolved statically, the function dynamically.
 //
 //  TASK
-//    Add `override` everywhere it belongs. Three of the derived functions do
+//    Add `override` everywhere it belongs. Two of the derived functions do
 //    not actually override anything; the compiler will tell you which, and
 //    then you fix the signatures.
 //

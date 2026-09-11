@@ -5,6 +5,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -33,12 +34,18 @@ std::vector<int> even_values_broken() {
   return to_vector(values | std::views::filter([](int n) { return n % 2 == 0; }));
 }
 
+// `source` is a named local, so `source | transform` would be a ref_view over
+// an object about to be destroyed. std::move makes it an rvalue, and
+// views::all on an rvalue builds an owning_view: the pipeline takes the vector
+// with it and nothing is left behind to dangle. The result is still lazy.
+auto doubled_view() {
+  std::vector<int> source = load();
+  return std::views::all(std::move(source)) |
+         std::views::transform([](int n) { return n * 2; });
+}
+
 std::vector<int> doubled_from_source() {
-  // views::all on an rvalue makes an owning_view: the pipeline takes the
-  // vector with it, so there is no temporary left behind to dangle.
-  auto view =
-      std::views::all(load()) | std::views::transform([](int n) { return n * 2; });
-  return to_vector(view);
+  return to_vector(doubled_view());
 }
 
 int first_above(int threshold) {
@@ -55,8 +62,18 @@ TEST_CASE("even_values_broken returns something the caller can keep") {
   CHECK(to_vector(values) == std::vector<int>{2, 4, 6});
 }
 
-TEST_CASE("a pipeline over a temporary must own it") {
+TEST_CASE("a returned view must own what it refers to") {
   CHECK(doubled_from_source() == std::vector<int>{2, 4, 6, 8, 10, 12});
+  // Laziness is the point of returning a view: taking two must not touch the
+  // rest.
+  CHECK(to_vector(doubled_view() | std::views::take(2)) == std::vector<int>{2, 4});
+}
+
+TEST_CASE("a pipeline built directly on an rvalue owns it") {
+  // This one was never a bug: `load()` is an rvalue, so views::all (which the
+  // pipe operator applies for you) wraps it in an owning_view.
+  auto view = load() | std::views::transform([](int n) { return n * 2; });
+  CHECK(to_vector(view) == std::vector<int>{2, 4, 6, 8, 10, 12});
 }
 
 TEST_CASE("find_if over a temporary range") {

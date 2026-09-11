@@ -24,7 +24,9 @@
 //    Break the cycle in the tree below, then implement `path_to_root` so it
 //    walks up through the weak parent links.
 //
-//  NOTE  This exercise starts as a compile error.
+//  NOTE  This exercise compiles as it stands, and that is the point: a cycle
+//        is not an error the compiler can see. Expect the live-count tests
+//        to fail, because nothing is ever freed.
 //
 //  RUN IT
 //    ./mcpp test 03_09
