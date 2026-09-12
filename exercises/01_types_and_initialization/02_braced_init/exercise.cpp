@@ -44,7 +44,7 @@
 std::vector<int> make_row(std::size_t width, int fill) {
   // TODO: braces here select the initializer_list constructor, so this builds
   // a two-element vector no matter what `width` says.
-  return std::vector<int>{static_cast<int>(width), fill};
+  return std::vector<int>(width, fill);
 }
 
 // An aggregate: no user-declared constructors, no private data, no virtuals.
@@ -57,7 +57,7 @@ struct Rectangle {
   // TODO: return the actual area. (`const` is right: computing an area does
   // not modify the rectangle.)
   int area() const {
-    return width;
+    return width * height;
   }
 };
 

@@ -14,7 +14,7 @@ This is the C++ counterpart to
 
 - **A recent C++20 toolchain.** The course uses `std::format`, `std::jthread`
   and the full `<ranges>`, which arrived in the standard libraries later than
-  the core language did. What CI builds, and what is known to work:
+  the core language did. What is known to work (CI builds the macOS row):
   - GCC 13 or newer (libstdc++ 13 is the first with `<format>`);
   - Clang 18 or newer, with either libstdc++ 13+ or libc++ 18+;
   - macOS: Xcode 16 or newer. `xcode-select --install` is enough.
