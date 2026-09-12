@@ -110,10 +110,10 @@ Learning to reach for these is part of the course.
 | 11 | Coroutines | writing a generator, a lazy task, awaiters and symmetric transfer, coroutine lifetimes, composing generators |
 | 12 | Modern standard library | `format`, `chrono`, `filesystem`, `regex`, `<bit>`, `source_location` |
 | 13 | Capstone | build a metrics store: value types, parsing, invariants, range queries, concurrent ingestion |
-| 14 | CUDA fundamentals | kernels and launch configuration, error handling, RAII for device memory, 2-D grids and bounds, host/device functions, streams and events |
-| 15 | Memory and performance | coalescing, shared-memory tiling and bank conflicts, warp shuffles, occupancy and launch bounds, unified memory and prefetching, pinned memory and overlap, atomics and privatisation |
-| 16 | Modern CUDA | Thrust, CUB, libcu++ (`cuda::std::span`, `cuda::atomic_ref`), cooperative groups, CUDA graphs, memory pools, device lambdas and constrained kernel templates |
-| 17 | Profiling and capstone | event timing and bandwidth, Nsight Systems timelines with NVTX, Nsight Compute and the FP64 trap, compute-sanitizer, a fused softmax |
+| 14 | CUDA fundamentals | `__global__` and the launch, grid-stride loops, `cudaError_t` and sticky errors, `DeviceBuffer` (RAII around `cudaMalloc`), 2-D grids and the bounds guard, `__host__ __device__`, streams, events and cross-stream dependencies |
+| 15 | Memory and performance | coalescing and 32-byte sectors, shared-memory tiling and bank conflicts, warp shuffles, occupancy and `__launch_bounds__`, unified memory and prefetching, pinned memory and copy/compute overlap, atomics and privatised histograms |
+| 16 | Modern CUDA | Thrust, CUB's two-phase device algorithms and `BlockReduce`, libcu++ (`cuda::std::span`, `cuda::atomic_ref`), cooperative groups, CUDA graphs, stream-ordered memory pools, extended `__device__` lambdas and concept-constrained kernels |
+| 17 | Profiling and capstone | event timing and achieved vs peak bandwidth, Nsight Systems timelines with NVTX, Nsight Compute and the FP64 trap, compute-sanitizer, a fused numerically-stable softmax |
 
 Chapters 14 to 17 are `exercise.cu` files and need a GPU; see
 [the CUDA track](#the-cuda-track-chapters-14-to-17).
@@ -201,8 +201,30 @@ For the profilers, the simplest path is an SSH session on the GPU machine:
 `./mcpp profile 17_02` writes `cmake-build-cuda/profile_17_02_....nsys-rep`,
 which you can open in `nsys-ui` there, or copy back and open in the Nsight
 Systems desktop app on the Mac (NVIDIA ships a macOS host for viewing).
-The same holds for `--ncu` and `ncu-ui`. Chapter 17's header comments say
-what to look for in each.
+The same holds for `--ncu` and `ncu-ui`.
+
+### What chapter 17 asks you to look at
+
+Each header comment walks through the report; in short:
+
+- **17.01** — no profiler. cudaEvent timing after a warm-up, best of several
+  runs, and the achieved bandwidth compared with the peak the device reports
+  through `cudaDeviceGetAttribute`.
+- **17.02** — `./mcpp profile 17_02` (Nsight Systems). In `--stats` output the
+  `cuda_api_sum` table is dominated by `cudaDeviceSynchronize` and
+  `cudaMemcpy` while `cuda_gpu_kern_sum` is tiny; the NVTX range around the
+  loop is far longer than the kernels inside it. On the timeline, kernels are
+  slivers separated by gaps. After the fix they run back to back.
+- **17.03** — `./mcpp profile 17_03 --ncu` (Nsight Compute). "GPU Speed Of
+  Light" shows the kernel is compute-bound; "Compute Workload Analysis" shows
+  the FP64 pipe at full utilisation with FMA idle; the Source page (enabled by
+  `-lineinfo`) points at the line with the double literal. GeForce cards run
+  FP64 at 1/64 rate.
+- **17.04** — `compute-sanitizer --tool memcheck` and `--tool initcheck` on the
+  starter's binary, which report an out-of-bounds read and an uninitialised
+  accumulator with file and line.
+- **17.05** — the capstone; profile it with both tools once it passes and
+  compare against the unfused version the test times it against.
 
 ### Verifying the CUDA solutions
 
