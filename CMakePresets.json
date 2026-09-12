@@ -46,6 +46,33 @@
       "description": "Catches data races. Use it for chapter 10 (concurrency).",
       "inherits": "debug",
       "cacheVariables": { "MCPP_SANITIZER": "thread" }
+    },
+    {
+      "name": "cuda",
+      "displayName": "CUDA (Linux + NVIDIA GPU)",
+      "description": "The whole course including chapters 14-17. Use it on the GPU machine. GCC is the host compiler because that is what nvcc is tested against.",
+      "inherits": "debug",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CUDA_HOST_COMPILER": "g++",
+        "CMAKE_CUDA_ARCHITECTURES": "89",
+        "MCPP_ENABLE_CUDA": "ON"
+      }
+    },
+    {
+      "name": "cuda-release",
+      "displayName": "CUDA, optimised host code",
+      "description": "As `cuda`, with -O2 host code. Device code is optimised in every configuration (nvcc does not tie it to CMAKE_BUILD_TYPE), so the timings in chapter 17 are the same either way; this only makes the CPU reference implementations in the tests faster.",
+      "inherits": "cuda",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "cuda-solutions",
+      "displayName": "CUDA + solutions",
+      "description": "As `cuda`, and also builds and tests the reference solutions.",
+      "inherits": "cuda",
+      "cacheVariables": { "MCPP_BUILD_SOLUTIONS": "ON" }
     }
   ],
   "buildPresets": [
@@ -53,7 +80,10 @@
     { "name": "release", "configurePreset": "release" },
     { "name": "solutions", "configurePreset": "solutions" },
     { "name": "asan", "configurePreset": "asan" },
-    { "name": "tsan", "configurePreset": "tsan" }
+    { "name": "tsan", "configurePreset": "tsan" },
+    { "name": "cuda", "configurePreset": "cuda" },
+    { "name": "cuda-release", "configurePreset": "cuda-release" },
+    { "name": "cuda-solutions", "configurePreset": "cuda-solutions" }
   ],
   "testPresets": [
     {
@@ -66,6 +96,9 @@
     { "name": "release", "inherits": "base", "configurePreset": "release" },
     { "name": "solutions", "inherits": "base", "configurePreset": "solutions" },
     { "name": "asan", "inherits": "base", "configurePreset": "asan" },
-    { "name": "tsan", "inherits": "base", "configurePreset": "tsan" }
+    { "name": "tsan", "inherits": "base", "configurePreset": "tsan" },
+    { "name": "cuda", "inherits": "base", "configurePreset": "cuda" },
+    { "name": "cuda-release", "inherits": "base", "configurePreset": "cuda-release" },
+    { "name": "cuda-solutions", "inherits": "base", "configurePreset": "cuda-solutions" }
   ]
 }

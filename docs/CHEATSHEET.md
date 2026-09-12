@@ -128,3 +128,30 @@ cmake --preset tsan && ctest --preset tsan   # data races
 
 The compiler is the cheapest analyser you have. `-Wall -Wextra -Wconversion
 -Werror` is on by default in this project, and should be on in yours.
+
+## CUDA — chapters 14 to 17
+
+| Need | Use |
+|---|---|
+| an error you cannot ignore | `check(cudaMalloc(...))` — throws with file:line (14.02) |
+| the error from a launch | `check(cudaGetLastError())` right after `<<<>>>` (14.02) |
+| device memory that frees itself | `DeviceBuffer<T>` (14.03) or `thrust::device_vector` (16.01) |
+| a grid that covers `n` | `(n + block - 1) / block` blocks, plus a bounds guard (14.04) |
+| a kernel for any `n` | a grid-stride loop (14.01) |
+| a copy that can overlap | pinned host memory + `cudaMemcpyAsync` on a stream (15.06) |
+| a dependency between streams | `cudaEventRecord` then `cudaStreamWaitEvent` (14.06) |
+| fast global memory | consecutive threads read consecutive addresses (15.01) |
+| a tile reused by a block | `__shared__`, `__syncthreads`, pad to dodge bank conflicts (15.02) |
+| a warp-wide sum | `__shfl_down_sync` or `cg::reduce` on a 32-wide tile (15.03, 16.04) |
+| a block size | `cudaOccupancyMaxPotentialBlockSize` (15.04) |
+| many small launches | capture them into a CUDA graph (16.05) |
+| allocation in a hot loop | `cudaMallocAsync` from a pool with the release threshold raised (16.06) |
+| "where did the time go?" | `./mcpp profile 17_02` (Nsight Systems) |
+| "why is this kernel slow?" | `./mcpp profile 17_03 --ncu` (Nsight Compute) |
+| memory errors and races | `compute-sanitizer --tool memcheck|racecheck|initcheck` (17.04) |
+
+Time GPU work with events, after a warm-up, and take the best of several
+runs (17.01). Never `std::chrono` around an asynchronous launch.
+
+A `1.0` literal or `pow` in device code is double precision, and a GeForce
+card runs double at 1/64 rate: write `1.0F` and `x * x` (17.03).

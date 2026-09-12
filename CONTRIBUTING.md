@@ -14,6 +14,25 @@
 
 4. Run `./scripts/check-course.sh`.
 
+For a CUDA exercise (chapters 14 to 17) the file is `exercise.cu`, and there
+are a few more rules:
+
+- It must compile under both CUDA 12.4 and 13.x. Avoid what CCCL 3.0 removed
+  (`thrust::pair`/`tuple`/`optional`, CUB's `debug_synchronous` overloads,
+  `cub::CountingInputIterator`, grid barriers) and anything that needs
+  `-rdc=true`.
+- Every launch is followed by `check(cudaGetLastError())`; every result is
+  read after a synchronising call. Device memory is owned by `DeviceBuffer`
+  (14.03) or a Thrust container, never by a bare `cudaMalloc`.
+- A performance test compares against a reference implementation compiled
+  into the same test, after a warm-up, using cudaEvent timing and the best of
+  several runs, with a margin of at least 2x below the expected effect. Never
+  an absolute time.
+- Buffers stay at or below 256 MB and the whole exercise under ten seconds.
+- `./scripts/check-course.sh` on the GPU machine is the only full check; on a
+  machine without nvcc it skips the CUDA chapters and says so. CI compiles
+  the CUDA solutions but cannot run them.
+
 ## What the checker enforces
 
 - **Every solution builds and passes.** A solution that does not is worse than

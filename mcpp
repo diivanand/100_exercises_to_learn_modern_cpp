@@ -9,19 +9,50 @@
 #   ./mcpp solution <filter>    diff your work against the reference solution
 #   ./mcpp list [filter]        list the exercises and where you are
 #   ./mcpp build [filter]       build without running
+#   ./mcpp profile <filter>     run one exercise under Nsight Systems
+#                               (--ncu: under Nsight Compute)   [GPU machine]
 #   ./mcpp format [--check]     run clang-format over the tree
 #   ./mcpp tidy [filter]        run clang-tidy over the tree
 #   ./mcpp clean                remove the build directories
 #
 # A "filter" is any substring of an exercise id, so `03`, `03_07`, `unique_ptr`
 # and `07_unique_ptr` all select 03.07. It is passed to ctest as a regex.
+#
+# Chapters 14-17 (CUDA) need nvcc and an NVIDIA GPU. On a machine without
+# them, `next` skips those exercises and `test` explains; everything else works
+# as before. On a machine with them, the `cuda` preset is picked automatically.
+# Set MCPP_PRESET to override the choice (for example MCPP_PRESET=debug to
+# build only the C++ chapters on the GPU machine).
 
 set -euo pipefail
 
 readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-readonly BUILD_DIR="${ROOT}/cmake-build-debug"
-readonly SOLUTION_BUILD_DIR="${ROOT}/cmake-build-solutions"
+
+# --- which preset ------------------------------------------------------------
+
+detect_preset() {
+  if [[ -n "${MCPP_PRESET:-}" ]]; then
+    printf '%s\n' "${MCPP_PRESET}"
+  elif [[ "$(uname -s)" == "Linux" ]] && command -v nvcc >/dev/null 2>&1; then
+    printf 'cuda\n'
+  else
+    printf 'debug\n'
+  fi
+}
+
+readonly PRESET="$(detect_preset)"
+readonly BUILD_DIR="${ROOT}/cmake-build-${PRESET}"
+if [[ "${PRESET}" == cuda* ]]; then
+  readonly SOLUTION_PRESET="cuda-solutions"
+else
+  readonly SOLUTION_PRESET="solutions"
+fi
+readonly SOLUTION_BUILD_DIR="${ROOT}/cmake-build-${SOLUTION_PRESET}"
 readonly PROGRESS_FILE="${ROOT}/.mcpp-progress"
+
+cuda_available() {
+  [[ "${PRESET}" == cuda* ]]
+}
 
 if [[ -t 1 ]]; then
   readonly BOLD=$'\033[1m' DIM=$'\033[2m' RED=$'\033[31m' GREEN=$'\033[32m'
@@ -45,7 +76,8 @@ run_exercise() {
   perl -e 'alarm shift; exec @ARGV or exit 127' "${DEADLINE_SECONDS}" "${binary}"
   local status=$?
   if [[ ${status} -eq 142 || ${status} -eq 14 ]]; then
-    printf '\n%smcpp: it did not finish within %ss -- this exercise starts as a\n'      "${YELLOW}" "${DEADLINE_SECONDS}"
+    printf '\n%smcpp: it did not finish within %ss -- this exercise starts as a\n' \
+      "${YELLOW}" "${DEADLINE_SECONDS}"
     printf '      program that never terminates. Read the header comment.%s\n' "${RESET}"
     return 1
   fi
@@ -58,17 +90,30 @@ need() {
 
 # --- exercise inventory ------------------------------------------------------
 
-# Prints "<id>\t<directory>" for every exercise, in course order.
+# Prints "<id>\t<directory>\t<kind>" for every exercise, in course order.
 #   id        = 03_07_unique_ptr   (chapter number, exercise number, name)
 #   directory = exercises/03_ownership/07_unique_ptr
+#   kind      = cpp | cuda         (exercise.cpp or exercise.cu)
 all_exercises() {
-  local dir chapter name chapter_number
+  local dir chapter name chapter_number kind
   while IFS= read -r dir; do
     chapter="$(basename "$(dirname "${dir}")")"
     name="$(basename "${dir}")"
     chapter_number="${chapter%%_*}"
-    printf '%s\t%s\n' "${chapter_number}_${name}" "${dir}"
+    kind=cpp
+    [[ -f "${dir}/exercise.cu" ]] && kind=cuda
+    printf '%s\t%s\t%s\n' "${chapter_number}_${name}" "${dir}" "${kind}"
   done < <(find "${ROOT}/exercises" -mindepth 2 -maxdepth 2 -type d | sort)
+}
+
+# The source file of an exercise directory: exercise.cpp or exercise.cu.
+source_of() {
+  local dir="$1"
+  if [[ -f "${dir}/exercise.cu" ]]; then
+    printf '%s/exercise.cu\n' "${dir}"
+  else
+    printf '%s/exercise.cpp\n' "${dir}"
+  fi
 }
 
 resolve_one() {
@@ -84,6 +129,13 @@ resolve_one() {
   printf '%s\n' "${matches}"
 }
 
+require_cuda_for() {
+  local id="$1" kind="$2"
+  if [[ "${kind}" == cuda ]] && ! cuda_available; then
+    die "${id} is a CUDA exercise and this machine has no nvcc. Build it on the GPU machine (see README: 'The CUDA track')."
+  fi
+}
+
 # --- build -------------------------------------------------------------------
 
 configure() {
@@ -97,17 +149,17 @@ configure() {
 # Builds one target, letting the compiler's diagnostics through untouched.
 build_target() {
   local target="$1"
-  configure "${BUILD_DIR}" debug
+  configure "${BUILD_DIR}" "${PRESET}"
   cmake --build "${BUILD_DIR}" --target "${target}"
 }
 
 # --- commands ----------------------------------------------------------------
 
 cmd_list() {
-  local filter="${1:-}" id dir current
+  local filter="${1:-}" id dir kind current
   current="$(cat "${PROGRESS_FILE}" 2>/dev/null || true)"
   local last_chapter=''
-  while IFS=$'\t' read -r id dir; do
+  while IFS=$'\t' read -r id dir kind; do
     [[ -z "${filter}" || "${id}" == *"${filter}"* ]] || continue
     local chapter
     chapter="$(basename "$(dirname "${dir}")")"
@@ -115,21 +167,25 @@ cmd_list() {
       printf '\n%s%s%s\n' "${BOLD}" "${chapter//_/ }" "${RESET}"
       last_chapter="${chapter}"
     fi
-    local marker='  '
+    local marker='  ' tag=''
     [[ "${id}" == "${current}" ]] && marker="${BLUE}->${RESET}"
-    printf '  %s %s\n' "${marker}" "${id}"
+    if [[ "${kind}" == cuda ]] && ! cuda_available; then
+      tag="  ${DIM}(CUDA: needs the GPU machine)${RESET}"
+    fi
+    printf '  %s %s%s\n' "${marker}" "${id}" "${tag}"
   done < <(all_exercises)
   printf '\n'
 }
 
 cmd_build() {
   local filter="${1:-}"
-  configure "${BUILD_DIR}" debug
+  configure "${BUILD_DIR}" "${PRESET}"
   if [[ -z "${filter}" ]]; then
     cmake --build "${BUILD_DIR}" --target exercises -- -k 0
   else
-    local id dir
-    IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+    local id dir kind
+    IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+    require_cuda_for "${id}" "${kind}"
     build_target "ex_${id}"
   fi
 }
@@ -140,16 +196,18 @@ cmd_test() {
     cmd_verify
     return
   fi
-  local id dir
-  IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+  local id dir kind
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  require_cuda_for "${id}" "${kind}"
   printf '%s==> %s%s\n%s   %s%s\n' \
-    "${BOLD}" "${id}" "${RESET}" "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+    "${BOLD}" "${id}" "${RESET}" "${DIM}" "$(source_of "${dir}")" "${RESET}" |
+    sed "s|${ROOT}/||"
   build_target "ex_${id}"
   run_exercise "${BUILD_DIR}/bin/exercises/$(basename "$(dirname "${dir}")")/ex_${id}"
 }
 
 cmd_verify() {
-  configure "${BUILD_DIR}" debug
+  configure "${BUILD_DIR}" "${PRESET}"
   # Some exercises deliberately do not compile until you have done the work
   # (making a function `constexpr`, say). `-k 0` tells the generator to keep
   # going after a failure so that one unfinished exercise does not hide the
@@ -161,23 +219,29 @@ cmd_verify() {
 # The main loop: walk the exercises in order and stop at the first one that
 # does not build or does not pass. That is the one you are working on.
 cmd_next() {
-  local id dir chapter binary
-  while IFS=$'\t' read -r id dir; do
+  local id dir kind chapter binary skipped=0
+  while IFS=$'\t' read -r id dir kind; do
     chapter="$(basename "$(dirname "${dir}")")"
     binary="${BUILD_DIR}/bin/exercises/${chapter}/ex_${id}"
+
+    if [[ "${kind}" == cuda ]] && ! cuda_available; then
+      printf '%sskip%s %s %s(CUDA)%s\n' "${DIM}" "${RESET}" "${id}" "${DIM}" "${RESET}"
+      skipped=$((skipped + 1))
+      continue
+    fi
 
     if ! build_target "ex_${id}" >/dev/null 2>&1; then
       printf '%s==> %s does not compile%s\n\n' "${RED}" "${id}" "${RESET}"
       printf '%s\n' "${id}" >"${PROGRESS_FILE}"
       build_target "ex_${id}" || true
-      printf '\n%s    %s/exercise.cpp%s\n' \
-        "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+      printf '\n%s    %s%s\n' \
+        "${DIM}" "$(source_of "${dir}" | sed "s|${ROOT}/||")" "${RESET}"
       return 1
     fi
 
     if ! (run_exercise "${binary}" >/dev/null 2>&1); then
-      printf '%s==> %s%s\n%s    %s/exercise.cpp%s\n\n' \
-        "${BOLD}" "${id}" "${RESET}" "${DIM}" "${dir#"${ROOT}"/}" "${RESET}"
+      printf '%s==> %s%s\n%s    %s%s\n\n' "${BOLD}" "${id}" "${RESET}" "${DIM}" \
+        "$(source_of "${dir}" | sed "s|${ROOT}/||")" "${RESET}"
       printf '%s\n' "${id}" >"${PROGRESS_FILE}"
       run_exercise "${binary}" || true
       return 1
@@ -186,17 +250,23 @@ cmd_next() {
     printf '%s  ok%s %s\n' "${GREEN}" "${RESET}" "${id}"
   done < <(all_exercises)
 
-  printf '\n%sEvery exercise passes. That is the whole course.%s\n' \
-    "${GREEN}${BOLD}" "${RESET}"
+  if [[ ${skipped} -gt 0 ]]; then
+    printf '\n%sEvery C++ exercise passes. %d CUDA exercises were skipped because\n' \
+      "${GREEN}${BOLD}" "${skipped}"
+    printf 'this machine has no nvcc -- run ./mcpp next on the GPU machine.%s\n' "${RESET}"
+  else
+    printf '\n%sEvery exercise passes. That is the whole course.%s\n' \
+      "${GREEN}${BOLD}" "${RESET}"
+  fi
   rm -f "${PROGRESS_FILE}"
 }
 
 cmd_solution() {
   local filter="${1:-$(cat "${PROGRESS_FILE}" 2>/dev/null || true)}"
   [[ -n "${filter}" ]] || die "usage: ./mcpp solution <filter>"
-  local id dir solution
-  IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
-  solution="${ROOT}/solutions/$(basename "$(dirname "${dir}")")/$(basename "${dir}")/exercise.cpp"
+  local id dir kind solution
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  solution="$(source_of "${ROOT}/solutions/$(basename "$(dirname "${dir}")")/$(basename "${dir}")")"
   [[ -f "${solution}" ]] || die "no solution checked in for ${id}"
 
   printf '%s==> %s: your work vs. the reference solution%s\n\n' \
@@ -208,7 +278,7 @@ cmd_solution() {
   local yours reference
   yours="$(mktemp)"
   reference="$(mktemp)"
-  strip_header "${dir}/exercise.cpp" >"${yours}"
+  strip_header "$(source_of "${dir}")" >"${yours}"
   strip_header "${solution}" >"${reference}"
 
   diff --unified=3 --label 'yours' --label 'reference' "${yours}" "${reference}" ||
@@ -226,6 +296,36 @@ strip_header() {
   ' "$1"
 }
 
+# Runs one exercise under a profiler and leaves the report next to the build
+# directory. Chapter 17 explains how to read it. Nsight Systems answers "where
+# did the time go?" across the whole program (launch gaps, copies, syncs);
+# Nsight Compute answers "why is THIS kernel slow?" and needs the binary to
+# have been built with -lineinfo, which cmake/Cuda.cmake does.
+cmd_profile() {
+  local filter="${1:-}" tool=nsys
+  [[ -n "${filter}" ]] || die "usage: ./mcpp profile <filter> [--ncu]"
+  [[ "${2:-}" == "--ncu" ]] && tool=ncu
+  cuda_available || die "profiling needs the GPU machine (no nvcc here)"
+  local id dir kind
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  [[ "${kind}" == cuda ]] || die "${id} is not a CUDA exercise"
+  build_target "ex_${id}"
+  local binary="${BUILD_DIR}/bin/exercises/$(basename "$(dirname "${dir}")")/ex_${id}"
+  local report="${BUILD_DIR}/profile_${id}"
+  if [[ "${tool}" == ncu ]]; then
+    need ncu "It ships with the CUDA toolkit: /usr/local/cuda/bin/ncu"
+    # --set full collects every section, including the source-level view. If
+    # this fails with ERR_NVGPUCTRPERM, see the README: the driver has to be
+    # told to let non-root users read the performance counters.
+    ncu --set full --import-source yes -f -o "${report}" "${binary}"
+    printf '\n%sreport: %s.ncu-rep  (open it with ncu-ui)%s\n' "${GREEN}" "${report}" "${RESET}"
+  else
+    need nsys "It ships with the CUDA toolkit: /usr/local/cuda/bin/nsys"
+    nsys profile --stats=true -f true -o "${report}" "${binary}"
+    printf '\n%sreport: %s.nsys-rep  (open it with nsys-ui)%s\n' "${GREEN}" "${report}" "${RESET}"
+  fi
+}
+
 cmd_format() {
   need clang-format "Install it with: brew install llvm"
   # A while-read loop rather than `mapfile`: macOS still ships bash 3.2.
@@ -234,7 +334,7 @@ cmd_format() {
   while IFS= read -r file; do
     files+=("${file}")
   done < <(find "${ROOT}/exercises" "${ROOT}/solutions" \
-    \( -name '*.cpp' -o -name '*.hpp' \) | sort)
+    \( -name '*.cpp' -o -name '*.hpp' -o -name '*.cu' -o -name '*.cuh' \) | sort)
 
   if [[ "${1:-}" == "--check" ]]; then
     clang-format --dry-run --Werror "${files[@]}"
@@ -247,14 +347,16 @@ cmd_format() {
 
 cmd_tidy() {
   need clang-tidy "Install it with: brew install llvm"
-  configure "${BUILD_DIR}" debug
+  configure "${BUILD_DIR}" "${PRESET}"
   local filter="${1:-}"
   local -a files=()
   if [[ -n "${filter}" ]]; then
-    local id dir
-    IFS=$'\t' read -r id dir < <(resolve_one "${filter}")
+    local id dir kind
+    IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+    [[ "${kind}" == cpp ]] || die "clang-tidy is not wired up for CUDA files; ${id} is one"
     files=("${dir}/exercise.cpp")
   else
+    # Only the C++ chapters: clang-tidy cannot follow nvcc's flags.
     local file
     while IFS= read -r file; do
       files+=("${file}")
@@ -271,13 +373,13 @@ cmd_clean() {
 
 cmd_solutions_check() {
   # Used by CI to prove every reference solution actually passes.
-  configure "${SOLUTION_BUILD_DIR}" solutions
+  configure "${SOLUTION_BUILD_DIR}" "${SOLUTION_PRESET}"
   cmake --build "${SOLUTION_BUILD_DIR}" --target solutions
   ctest --test-dir "${SOLUTION_BUILD_DIR}" --output-on-failure -R '^solution/'
 }
 
 usage() {
-  sed -n '3,20p' "${BASH_SOURCE[0]}" | sed 's|^# \{0,1\}||'
+  sed -n '3,28p' "${BASH_SOURCE[0]}" | sed 's|^# \{0,1\}||'
 }
 
 main() {
@@ -291,6 +393,7 @@ main() {
     build) cmd_build "$@" ;;
     list | ls) cmd_list "$@" ;;
     solution | sol) cmd_solution "$@" ;;
+    profile | prof) cmd_profile "$@" ;;
     format | fmt) cmd_format "$@" ;;
     tidy) cmd_tidy "$@" ;;
     clean) cmd_clean "$@" ;;

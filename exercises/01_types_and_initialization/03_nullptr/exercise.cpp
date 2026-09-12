@@ -48,7 +48,7 @@ std::string describe(std::nullptr_t) {
 // the more specialised `std::nullptr_t` overload -- you need a value that is
 // *typed* as a pointer.
 std::string call_with_null() {
-  return describe(0);
+  return describe(static_cast<const char*>(nullptr));
 }
 
 // Returns the first character of a C string, or nothing if there is no string
@@ -57,6 +57,9 @@ std::optional<char> first_char(const char* text) {
   // TODO: `text` may be null. Compare it against nullptr before dereferencing;
   // reading through a null pointer is undefined behaviour, not a crash you can
   // rely on.
+  if (text == nullptr || std::string_view(text).empty()) {
+    return std::nullopt;
+  }
   return text[0];
 }
 

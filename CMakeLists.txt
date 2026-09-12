@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.24)
 project(
   modern_cpp_exercises
   VERSION 1.0.0
-  DESCRIPTION "100 exercises to learn modern C++ (C++20)"
+  DESCRIPTION "100 exercises to learn modern C++ (C++20), plus a CUDA track"
   LANGUAGES CXX)
 
 # ---------------------------------------------------------------------------
@@ -49,6 +49,11 @@ mcpp_set_project_warnings(mcpp_warnings ${MCPP_WARNINGS_AS_ERRORS})
 
 mcpp_enable_sanitizers(mcpp_options)
 
+# Chapters 14-17 need nvcc and a GPU. This detects CUDA and sets up the
+# `mcpp::cuda` target when it is there, and skips those chapters when it is
+# not. See cmake/Cuda.cmake.
+include(Cuda)
+
 add_subdirectory(third_party)
 
 enable_testing()
@@ -69,4 +74,5 @@ message(STATUS "  warnings as errors .. ${MCPP_WARNINGS_AS_ERRORS}")
 message(STATUS "  exercises ........... ${MCPP_BUILD_EXERCISES}")
 message(STATUS "  solutions ........... ${MCPP_BUILD_SOLUTIONS}")
 message(STATUS "  sanitizers .......... ${MCPP_SANITIZER}")
+message(STATUS "  CUDA chapters ....... ${MCPP_CUDA_ENABLED}")
 message(STATUS "")

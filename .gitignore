@@ -75,3 +75,13 @@ compile_commands.json
 
 # clang-tidy / clangd scratch
 .clang-tidy.cache
+
+# ---------------------------------------------------------------------------
+# Profiler output (chapter 17). Reports are large and machine-specific.
+# ---------------------------------------------------------------------------
+*.nsys-rep
+*.ncu-rep
+*.qdrep
+*.qdstrm
+*.sqlite
+report*.nsys-rep
