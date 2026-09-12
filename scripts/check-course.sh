@@ -14,11 +14,24 @@
 #      starter does not produce.
 #
 # Usage: scripts/check-course.sh
+#
+# On a machine with nvcc on the PATH the CUDA chapters are included and GCC is
+# used as the host compiler (that is what nvcc is tested against); elsewhere
+# they are skipped and clang++ is used, as on the author's laptop. Override
+# either with MCPP_CXX=... and MCPP_ENABLE_CUDA=ON|OFF.
 
 set -uo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD="${ROOT}/cmake-build-check"
+
+if command -v nvcc >/dev/null 2>&1; then
+  CXX="${MCPP_CXX:-g++}"
+  ENABLE_CUDA="${MCPP_ENABLE_CUDA:-ON}"
+else
+  CXX="${MCPP_CXX:-clang++}"
+  ENABLE_CUDA="${MCPP_ENABLE_CUDA:-OFF}"
+fi
 
 readonly RED=$'\033[31m' GREEN=$'\033[32m' YELLOW=$'\033[33m' BOLD=$'\033[1m'
 readonly RESET=$'\033[0m'
@@ -42,8 +55,12 @@ printf '%s==> configuring%s\n' "${BOLD}" "${RESET}"
 # was configured with different options is how this script starts reporting
 # failures that are really its own.
 cmake -S "${ROOT}" -B "${BUILD}" -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER="${CXX}" \
+  -DCMAKE_CUDA_HOST_COMPILER="${CXX}" -DMCPP_ENABLE_CUDA="${ENABLE_CUDA}" \
   -DMCPP_BUILD_SOLUTIONS=ON -DMCPP_BUILD_EXERCISES=ON >/dev/null || exit 1
+if [[ "${ENABLE_CUDA}" == OFF ]]; then
+  printf '  %s(CUDA chapters skipped: no nvcc on this machine)%s\n' "${YELLOW}" "${RESET}"
+fi
 
 printf '\n%s==> solutions must build and pass%s\n' "${BOLD}" "${RESET}"
 if ! cmake --build "${BUILD}" --target solutions -- -k 0 >/dev/null 2>&1; then
@@ -78,6 +95,8 @@ while IFS= read -r dir; do
   name="$(basename "${dir}")"
   id="${chapter%%_*}_${name}"
   binary="${BUILD}/bin/exercises/${chapter}/ex_${id}"
+  # A CUDA exercise without a binary on a machine without CUDA is skipped, not
+  # a starter that failed to build.
   [[ -x "${binary}" ]] || continue
   # Many starters crash rather than merely failing an assertion (reading past
   # the end of a vector, dereferencing null). A crash is a failure; run the
@@ -104,7 +123,7 @@ else
     rest="${id#*_}"
     dir="$(find "${ROOT}/exercises/${chapter_number}"_* -maxdepth 1 -type d \
       -name "${rest}" 2>/dev/null | head -1)"
-    if [[ -n "${dir}" ]] && grep -q '^//  NOTE' "${dir}/exercise.cpp"; then
+    if [[ -n "${dir}" ]] && grep -qh '^//  NOTE' "${dir}"/exercise.c* 2>/dev/null; then
       ok "${id} (documented)"
     else
       note "${id} does not compile and has no NOTE in its header comment"
@@ -121,8 +140,12 @@ while IFS= read -r dir; do
   chapter="$(basename "$(dirname "${dir}")")"
   name="$(basename "${dir}")"
   id="${chapter%%_*}_${name}"
-  grep -qiE '^//  NOTE.*(compile error|does not compile|not compile until)' \
-    "${dir}/exercise.cpp" || continue
+  grep -qhiE '^//  NOTE.*(compile error|does not compile|not compile until)' \
+    "${dir}"/exercise.c* 2>/dev/null || continue
+  # A CUDA starter cannot be judged on a machine that did not build it.
+  if [[ "${ENABLE_CUDA}" == OFF && -f "${dir}/exercise.cu" ]]; then
+    continue
+  fi
   if [[ " ${uncompilable[*]-} " != *" ${id} "* ]]; then
     note "${id} says it starts as a compile error, but it compiles"
     lying=$((lying + 1))

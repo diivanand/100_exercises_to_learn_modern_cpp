@@ -44,7 +44,7 @@
 
 // TODO: this is fine at run time but cannot be used in a `static_assert`.
 // Mark it `constexpr`.
-std::uint64_t factorial(std::uint64_t n) {
+constexpr std::uint64_t factorial(std::uint64_t n) {
   std::uint64_t result = 1;
   for (std::uint64_t i = 2; i <= n; ++i) {
     result *= i;
@@ -53,7 +53,7 @@ std::uint64_t factorial(std::uint64_t n) {
 }
 
 // TODO: same treatment. A zero is not a power of two.
-bool is_power_of_two(std::uint64_t n) {
+constexpr bool is_power_of_two(std::uint64_t n) {
   return n != 0 && (n & (n - 1)) == 0;
 }
 
