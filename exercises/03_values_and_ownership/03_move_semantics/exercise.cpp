@@ -69,20 +69,20 @@ public:
 
   ~TextBuffer() = default;
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return lines_.size();
   }
   [[nodiscard]] bool empty() const noexcept {
     return lines_.empty();
   }
-  [[nodiscard]] const std::string& line(std::size_t index) const {
+  const std::string& line(std::size_t index) const {
     return lines_[index];
   }
 
-  [[nodiscard]] static int copy_count() noexcept {
+  static int copy_count() noexcept {
     return copy_count_;
   }
-  [[nodiscard]] static int move_count() noexcept {
+  static int move_count() noexcept {
     return move_count_;
   }
   static void reset_counts() noexcept {

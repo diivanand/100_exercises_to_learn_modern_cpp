@@ -17,21 +17,21 @@ public:
     static_assert(sizeof...(Ts) == N, "wrong number of components");
   }
 
-  [[nodiscard]] constexpr double operator[](std::size_t index) const {
+  constexpr double operator[](std::size_t index) const {
     return values_[index];
   }
-  [[nodiscard]] constexpr double& operator[](std::size_t index) {
+  constexpr double& operator[](std::size_t index) {
     return values_[index];
   }
 
-  [[nodiscard]] static constexpr std::size_t size() noexcept {
+  static constexpr std::size_t size() noexcept {
     return N;
   }
 
   // The parameter type is `Vector<N>` -- the same N. A Vector<2> simply does
   // not convert, so the dimension check happens at compile time and costs
   // nothing at run time.
-  [[nodiscard]] constexpr double dot(const Vector& other) const {
+  constexpr double dot(const Vector& other) const {
     double total = 0.0;
     for (std::size_t i = 0; i < N; ++i) {
       total += values_[i] * other.values_[i];
@@ -56,7 +56,7 @@ struct FixedString {
     std::copy_n(literal, N, data.begin());
   }
 
-  [[nodiscard]] constexpr std::string_view view() const {
+  constexpr std::string_view view() const {
     // N includes the literal's trailing null, which is not part of the string.
     return std::string_view{data.data(), N - 1};
   }
@@ -74,7 +74,7 @@ template <FixedString Name, typename T>
 struct Tagged {
   T value{};
 
-  [[nodiscard]] static constexpr std::string_view name() {
+  static constexpr std::string_view name() {
     return Name.view();
   }
 };

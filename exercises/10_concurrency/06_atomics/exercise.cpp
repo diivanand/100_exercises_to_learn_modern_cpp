@@ -79,7 +79,7 @@ class Stack {
 public:
   void push(int value) {}
 
-  [[nodiscard]] int depth() const {
+  int depth() const {
     int count = 0;
     for (const Node* node = head_.load(); node != nullptr; node = node->next) {
       ++count;
@@ -100,7 +100,7 @@ public:
   Stack(const Stack&) = delete;
   Stack& operator=(const Stack&) = delete;
 
-  [[nodiscard]] long total() const {
+  long total() const {
     long sum = 0;
     for (const Node* node = head_.load(); node != nullptr; node = node->next) {
       sum += node->value;

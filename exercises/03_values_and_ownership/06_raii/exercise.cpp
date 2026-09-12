@@ -48,7 +48,7 @@ class Ledger {
 public:
   explicit Ledger(std::vector<Account> accounts) : accounts_(std::move(accounts)) {}
 
-  [[nodiscard]] int balance_of(const std::string& name) const {
+  int balance_of(const std::string& name) const {
     for (const auto& account : accounts_) {
       if (account.name == name) {
         return account.balance;
@@ -70,7 +70,7 @@ public:
     throw std::out_of_range{"no such account: " + name};
   }
 
-  [[nodiscard]] std::vector<Account> snapshot() const {
+  std::vector<Account> snapshot() const {
     return accounts_;
   }
   void restore(std::vector<Account> snapshot) {

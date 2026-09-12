@@ -55,21 +55,21 @@ public:
   // TODO: a variadic constructor so `Vector{1.0, 2.0, 3.0}` works, with a
   // static_assert that the number of arguments matches N.
 
-  [[nodiscard]] constexpr double operator[](std::size_t index) const {
+  constexpr double operator[](std::size_t index) const {
     return values_[index];
   }
-  [[nodiscard]] constexpr double& operator[](std::size_t index) {
+  constexpr double& operator[](std::size_t index) {
     return values_[index];
   }
 
-  [[nodiscard]] static constexpr std::size_t size() noexcept {
+  static constexpr std::size_t size() noexcept {
     return N;
   }
 
   // TODO: dot product. Because N is part of the type, a caller cannot pass a
   // Vector of a different length -- there is no run-time check to write and no
   // way to get it wrong.
-  [[nodiscard]] constexpr double dot(const Vector& other) const {
+  constexpr double dot(const Vector& other) const {
     return 0.0;
   }
 
@@ -102,7 +102,7 @@ template <FixedString Name, typename T>
 struct Tagged {
   T value{};
 
-  [[nodiscard]] static constexpr std::string_view name() {
+  static constexpr std::string_view name() {
     return Name.view();
   }
 };

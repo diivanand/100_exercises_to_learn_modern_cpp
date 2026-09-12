@@ -79,7 +79,7 @@ public:
   // value and move it into the member.
   explicit Logger(const std::string& prefix) : prefix_(prefix) {}
 
-  [[nodiscard]] std::string format(std::string_view message) const {
+  std::string format(std::string_view message) const {
     return prefix_ + ": " + std::string{message};
   }
 

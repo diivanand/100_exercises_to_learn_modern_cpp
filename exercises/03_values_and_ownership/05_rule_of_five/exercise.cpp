@@ -90,10 +90,10 @@ public:
   //  * Move assignment must close whatever it is already holding first, and
   //    must survive `x = std::move(x)`.
 
-  [[nodiscard]] int get() const noexcept {
+  int get() const noexcept {
     return handle_;
   }
-  [[nodiscard]] bool valid() const noexcept {
+  bool valid() const noexcept {
     return handle_ != fake_os::kInvalidHandle;
   }
 

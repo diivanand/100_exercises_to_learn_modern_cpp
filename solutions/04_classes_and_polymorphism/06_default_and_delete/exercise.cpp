@@ -26,7 +26,7 @@ public:
   Handle& operator=(Handle&&) = default;
   ~Handle() = default;
 
-  [[nodiscard]] int slot() const noexcept {
+  int slot() const noexcept {
     return slot_;
   }
 

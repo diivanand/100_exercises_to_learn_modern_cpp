@@ -70,7 +70,7 @@ public:
     thread_.request_stop();
   }
 
-  [[nodiscard]] long processed() const {
+  long processed() const {
     return processed_.load();
   }
 

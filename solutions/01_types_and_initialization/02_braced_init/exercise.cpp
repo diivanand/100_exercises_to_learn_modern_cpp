@@ -20,7 +20,7 @@ struct Rectangle {
   int width = 0;
   int height = 0;
 
-  [[nodiscard]] int area() const {
+  int area() const {
     return width * height;
   }
 };

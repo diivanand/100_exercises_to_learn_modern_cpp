@@ -74,7 +74,7 @@ public:
   Handle() = default;
   explicit Handle(int slot) : slot_(slot) {}
 
-  [[nodiscard]] int slot() const noexcept {
+  int slot() const noexcept {
     return slot_;
   }
 

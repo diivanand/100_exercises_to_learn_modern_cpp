@@ -56,7 +56,7 @@ struct Node {
   std::shared_ptr<Node> parent;
   std::vector<std::shared_ptr<Node>> children;
 
-  [[nodiscard]] static int live_count() noexcept {
+  static int live_count() noexcept {
     return live_count_;
   }
 

@@ -50,10 +50,10 @@ public:
     misses_.fetch_add(1, kMetrics);
   }
 
-  [[nodiscard]] long hits() const {
+  long hits() const {
     return hits_.load(kMetrics);
   }
-  [[nodiscard]] long misses() const {
+  long misses() const {
     return misses_.load(kMetrics);
   }
 
@@ -69,7 +69,7 @@ public:
     initialised_.store(true, kPublish);
   }
 
-  [[nodiscard]] int get() const {
+  int get() const {
     return initialised_.load(kConsume) ? value_ : -1;
   }
 

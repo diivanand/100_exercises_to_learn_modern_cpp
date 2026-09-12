@@ -89,18 +89,18 @@ public:
 
   // TODO: a CONST reference to the samples. Not a copy (this is called often),
   // and not a mutable reference (that would give the invariant away).
-  [[nodiscard]] const std::vector<Sample>& samples() const noexcept {
+  const std::vector<Sample>& samples() const noexcept {
     return samples_;
   }
 
   // TODO: the most recent sample, or nothing (05.04).
-  [[nodiscard]] std::optional<Sample> latest() const {
+  std::optional<Sample> latest() const {
     return std::nullopt;
   }
 
   // TODO: the samples in the half-open range [from, to). Because the vector is
   // sorted, this is two binary searches rather than a scan.
-  [[nodiscard]] std::vector<Sample> between(Timestamp from, Timestamp to) const {
+  std::vector<Sample> between(Timestamp from, Timestamp to) const {
     return {};
   }
 
@@ -127,17 +127,17 @@ public:
 
   // TODO: look up a series WITHOUT creating it -- so `find`, not operator[].
   // Returning a pointer lets absence be expressed without an exception.
-  [[nodiscard]] const SeriesData* find(const SeriesKey& key) const {
+  const SeriesData* find(const SeriesKey& key) const {
     return nullptr;
   }
 
   // TODO: the latest sample of one series, or nothing.
-  [[nodiscard]] std::optional<Sample> latest(const SeriesKey& key) const {
+  std::optional<Sample> latest(const SeriesKey& key) const {
     return std::nullopt;
   }
 
   // TODO: every key, in sorted order.
-  [[nodiscard]] std::vector<SeriesKey> keys() const {
+  std::vector<SeriesKey> keys() const {
     return {};
   }
 

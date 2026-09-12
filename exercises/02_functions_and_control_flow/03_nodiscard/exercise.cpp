@@ -20,6 +20,13 @@
 //  C++20 lets `[[nodiscard]]` carry a reason: `[[nodiscard("check this")]]`.
 //  It can also go on a *type*, which marks every function returning it.
 //
+//  Do not put it on everything. It pays for itself in three places: a
+//  function that returns an error or status, a name that reads like a command
+//  but is really a query (`empty()`, `release()`), and a function that hands
+//  back a resource (`lock()`, `take()`) -- dropping that result frees the
+//  resource on the same line. A plain getter or a small pure helper gains
+//  nothing but noise, and that is the rule this course follows.
+//
 //  TASK
 //    Mark the functions below so the compiler catches the misuse in the
 //    commented-out lines, and fix the switch so `classify` is right.

@@ -75,7 +75,7 @@ public:
   // that no more items are coming. This is the notify_all case.
   void close() {}
 
-  [[nodiscard]] std::size_t size() const {
+  std::size_t size() const {
     const std::lock_guard lock{mutex_};
     return items_.size();
   }

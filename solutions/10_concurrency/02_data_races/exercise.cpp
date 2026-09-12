@@ -71,12 +71,12 @@ public:
     ++count_;
   }
 
-  [[nodiscard]] double mean() const {
+  double mean() const {
     const std::lock_guard lock{mutex_};
     return count_ == 0 ? 0.0 : static_cast<double>(sum_) / count_;
   }
 
-  [[nodiscard]] int count() const {
+  int count() const {
     const std::lock_guard lock{mutex_};
     return count_;
   }

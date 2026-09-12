@@ -18,7 +18,7 @@ struct Texture {
   Texture(const Texture&) = delete;
   Texture& operator=(const Texture&) = delete;
 
-  [[nodiscard]] static int live_count() noexcept {
+  static int live_count() noexcept {
     return live_count_;
   }
 
@@ -50,7 +50,7 @@ public:
     textures_.erase(name);
   }
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return textures_.size();
   }
 

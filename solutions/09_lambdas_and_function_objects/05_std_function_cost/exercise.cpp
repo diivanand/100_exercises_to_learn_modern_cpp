@@ -36,7 +36,7 @@ public:
     }
   }
 
-  [[nodiscard]] std::size_t handler_count() const noexcept {
+  std::size_t handler_count() const noexcept {
     return handlers_.size();
   }
 

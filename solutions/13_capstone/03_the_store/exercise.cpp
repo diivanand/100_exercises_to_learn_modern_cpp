@@ -55,23 +55,23 @@ public:
     }
   }
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return samples_.size();
   }
   [[nodiscard]] bool empty() const noexcept {
     return samples_.empty();
   }
-  [[nodiscard]] std::size_t capacity() const noexcept {
+  std::size_t capacity() const noexcept {
     return capacity_;
   }
 
   // A read-only view of the samples. Returning a const reference rather than a
   // copy, and const so the invariant cannot be broken through it.
-  [[nodiscard]] const std::vector<Sample>& samples() const noexcept {
+  const std::vector<Sample>& samples() const noexcept {
     return samples_;
   }
 
-  [[nodiscard]] std::optional<Sample> latest() const {
+  std::optional<Sample> latest() const {
     if (samples_.empty()) {
       return std::nullopt;
     }
@@ -80,7 +80,7 @@ public:
 
   // The half-open range [from, to). Binary search, because the samples are
   // sorted -- which is the point of maintaining the invariant.
-  [[nodiscard]] std::vector<Sample> between(Timestamp from, Timestamp to) const {
+  std::vector<Sample> between(Timestamp from, Timestamp to) const {
     const auto first = std::ranges::lower_bound(samples_, from, {}, &Sample::at);
     const auto last = std::ranges::lower_bound(samples_, to, {}, &Sample::at);
     return {first, last};
@@ -111,11 +111,11 @@ public:
     position->second.add(sample);
   }
 
-  [[nodiscard]] std::size_t series_count() const noexcept {
+  std::size_t series_count() const noexcept {
     return series_.size();
   }
 
-  [[nodiscard]] std::size_t sample_count() const {
+  std::size_t sample_count() const {
     std::size_t total = 0;
     for (const auto& [key, data] : series_) {
       total += data.size();
@@ -126,17 +126,17 @@ public:
   // Reading a missing key must not create it, so `find`, not operator[]
   // (06.06). Returns a pointer rather than a reference so absence is
   // expressible without an exception.
-  [[nodiscard]] const SeriesData* find(const SeriesKey& key) const {
+  const SeriesData* find(const SeriesKey& key) const {
     const auto it = series_.find(key);
     return it == series_.end() ? nullptr : &it->second;
   }
 
-  [[nodiscard]] std::optional<Sample> latest(const SeriesKey& key) const {
+  std::optional<Sample> latest(const SeriesKey& key) const {
     const SeriesData* data = find(key);
     return data == nullptr ? std::nullopt : data->latest();
   }
 
-  [[nodiscard]] std::vector<SeriesKey> keys() const {
+  std::vector<SeriesKey> keys() const {
     std::vector<SeriesKey> result;
     result.reserve(series_.size());
     for (const auto& [key, data] : series_) {

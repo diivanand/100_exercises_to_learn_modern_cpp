@@ -9,7 +9,7 @@
 class Timeout {
 public:
   explicit Timeout(int seconds) : seconds_(seconds) {}
-  [[nodiscard]] int seconds() const noexcept {
+  int seconds() const noexcept {
     return seconds_;
   }
 
@@ -25,7 +25,7 @@ struct Point {
 class Name {
 public:
   explicit Name(std::string value) : value_(std::move(value)) {}
-  [[nodiscard]] const std::string& value() const noexcept {
+  const std::string& value() const noexcept {
     return value_;
   }
 
@@ -49,7 +49,7 @@ public:
   explicit(!std::is_convertible_v<U, T>) Wrapper(U&& value)
       : value_(std::forward<U>(value)) {}
 
-  [[nodiscard]] const T& get() const noexcept {
+  const T& get() const noexcept {
     return value_;
   }
 

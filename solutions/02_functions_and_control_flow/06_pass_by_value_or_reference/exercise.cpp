@@ -33,7 +33,7 @@ public:
   // costs one move, and the constructor body says which happens.
   explicit Logger(std::string prefix) : prefix_(std::move(prefix)) {}
 
-  [[nodiscard]] std::string format(std::string_view message) const {
+  std::string format(std::string_view message) const {
     return prefix_ + ": " + std::string{message};
   }
 

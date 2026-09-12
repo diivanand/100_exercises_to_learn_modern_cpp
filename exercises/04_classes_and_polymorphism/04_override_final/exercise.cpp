@@ -59,9 +59,9 @@ public:
   Shape& operator=(Shape&&) = default;
   virtual ~Shape() = default;
 
-  [[nodiscard]] virtual double area() const = 0;
-  [[nodiscard]] virtual std::string name() const = 0;
-  [[nodiscard]] virtual std::string describe(int precision) const {
+  virtual double area() const = 0;
+  virtual std::string name() const = 0;
+  virtual std::string describe(int precision) const {
     return name() + " (precision " + std::to_string(precision) + ")";
   }
 };
@@ -73,13 +73,13 @@ public:
   // TODO: add `override` to each of these. Two of them are wrong -- one is
   // missing a `const`, one takes the wrong parameter type -- and the compiler
   // will point at exactly those once you have asked it to check.
-  [[nodiscard]] double area() {
+  double area() {
     return std::numbers::pi * radius_ * radius_;
   }
-  [[nodiscard]] std::string name() const {
+  std::string name() const {
     return "circle";
   }
-  [[nodiscard]] std::string describe(double precision) const {
+  std::string describe(double precision) const {
     return "circle at precision " + std::to_string(static_cast<int>(precision));
   }
 
@@ -94,10 +94,10 @@ class Square : public Shape {
 public:
   explicit Square(double side) : side_(side) {}
 
-  [[nodiscard]] double area() const override {
+  double area() const override {
     return side_ * side_;
   }
-  [[nodiscard]] std::string name() const override {
+  std::string name() const override {
     return "square";
   }
 

@@ -39,13 +39,13 @@ class Accumulator {
 public:
   explicit Accumulator(int start) : total_(start) {}
 
-  [[nodiscard]] std::function<int(int)> adder() const {
+  std::function<int(int)> adder() const {
     // Captures the value it needs, not the object it came from. The result is
     // independent of this Accumulator's lifetime.
     return [total = total_](int value) { return total + value; };
   }
 
-  [[nodiscard]] int total() const noexcept {
+  int total() const noexcept {
     return total_;
   }
 

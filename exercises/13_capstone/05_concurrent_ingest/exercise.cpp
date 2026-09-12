@@ -94,10 +94,10 @@ public:
 
   // TODO: series_count and sample_count, both const, both under a SHARED lock
   // so concurrent readers do not serialise behind each other.
-  [[nodiscard]] std::size_t series_count() const {
+  std::size_t series_count() const {
     return 0;
   }
-  [[nodiscard]] std::size_t sample_count() const {
+  std::size_t sample_count() const {
     return 0;
   }
 
@@ -107,7 +107,7 @@ public:
   // reader holding it while a writer appends is a data race -- the exact bug
   // this whole class exists to prevent. This is the one place in the course
   // where copying is the correct answer rather than the lazy one.
-  [[nodiscard]] std::vector<Sample> samples_of(const SeriesKey& key) const {
+  std::vector<Sample> samples_of(const SeriesKey& key) const {
     return {};
   }
 
@@ -139,7 +139,7 @@ public:
   // strand the other workers for ever.
   void close() {}
 
-  [[nodiscard]] std::size_t depth() const {
+  std::size_t depth() const {
     const std::lock_guard lock{mutex_};
     return batches_.size();
   }
@@ -178,7 +178,7 @@ public:
   // twice, since the destructor calls it too.
   void drain() {}
 
-  [[nodiscard]] long batches_processed() const {
+  long batches_processed() const {
     return batches_processed_.load(std::memory_order_relaxed);
   }
 

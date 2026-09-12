@@ -25,7 +25,7 @@ public:
     items_.push_back(value);
   }
 
-  [[nodiscard]] std::size_t size() {
+  std::size_t size() {
     const std::lock_guard lock{mutex_};
     return items_.size();
   }
@@ -56,14 +56,14 @@ public:
     entries_.insert_or_assign(std::move(key), value);
   }
 
-  [[nodiscard]] int get(const std::string& key) const {
+  int get(const std::string& key) const {
     // Readers share: any number of these can run at once.
     const std::shared_lock lock{mutex_};
     const auto it = entries_.find(key);
     return it == entries_.end() ? -1 : it->second;
   }
 
-  [[nodiscard]] std::size_t size() const {
+  std::size_t size() const {
     const std::shared_lock lock{mutex_};
     return entries_.size();
   }

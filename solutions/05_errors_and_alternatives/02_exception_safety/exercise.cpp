@@ -18,12 +18,12 @@ public:
   Inventory() = default;
   explicit Inventory(std::map<std::string, int> stock) : stock_(std::move(stock)) {}
 
-  [[nodiscard]] int count_of(const std::string& item) const {
+  int count_of(const std::string& item) const {
     const auto it = stock_.find(item);
     return it == stock_.end() ? 0 : it->second;
   }
 
-  [[nodiscard]] std::size_t distinct_items() const noexcept {
+  std::size_t distinct_items() const noexcept {
     return stock_.size();
   }
 

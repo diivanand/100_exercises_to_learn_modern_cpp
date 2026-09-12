@@ -34,7 +34,7 @@ public:
                        std::source_location where = std::source_location::current())
       : std::runtime_error(message), where_(where) {}
 
-  [[nodiscard]] const std::source_location& where() const noexcept {
+  const std::source_location& where() const noexcept {
     return where_;
   }
 

@@ -38,7 +38,7 @@ void shout(std::vector<std::string>& words) {
   // TODO: this compiles, runs, and does nothing. `word` is a fresh std::string
   // on every iteration -- a copy that is modified and then destroyed at the
   // closing brace. Ask for a reference to the element instead.
-  for (auto word : words) {
+  for (std::string& word : words) {
     word += '!';
   }
 }
@@ -51,7 +51,7 @@ std::string_view longest(const std::vector<std::string>& words) {
   //
   // (Once you do, notice that `best` is still safe: it views characters owned
   // by `words`, which outlives the call.)
-  for (auto word : words) {
+  for (const auto& word : words) {
     if (word.size() > best.size()) {
       best = word;
     }

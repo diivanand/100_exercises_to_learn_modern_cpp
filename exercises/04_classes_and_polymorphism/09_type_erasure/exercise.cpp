@@ -49,20 +49,20 @@
 // knows Drawable exists. They only agree on the name and shape of `render`.
 struct Circle {
   double radius = 1.0;
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "circle(" + std::to_string(static_cast<int>(radius)) + ")";
   }
 };
 
 struct Label {
   std::string text;
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "label(" + text + ")";
   }
 };
 
 struct Spacer {
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "spacer";
   }
 };
@@ -82,7 +82,7 @@ public:
   // object inside -- which is what `Concept::clone` is for. Move operations
   // can be defaulted.
 
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return self_->render();
   }
 
@@ -96,7 +96,7 @@ private:
     Concept(Concept&&) = default;
     Concept& operator=(Concept&&) = default;
 
-    [[nodiscard]] virtual std::string render() const = 0;
+    virtual std::string render() const = 0;
     [[nodiscard]] virtual std::unique_ptr<Concept> clone() const = 0;
   };
 
@@ -152,7 +152,7 @@ TEST_CASE("adding a new type requires nothing of the old ones") {
   // A type declared after Drawable, in another file, in another library --
   // it still fits.
   struct Divider {
-    [[nodiscard]] std::string render() const {
+    std::string render() const {
       return "---";
     }
   };

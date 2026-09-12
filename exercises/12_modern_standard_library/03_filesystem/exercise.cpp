@@ -116,7 +116,7 @@ public:
   TemporaryTree(const TemporaryTree&) = delete;
   TemporaryTree& operator=(const TemporaryTree&) = delete;
 
-  [[nodiscard]] const fs::path& root() const {
+  const fs::path& root() const {
     return root_;
   }
 

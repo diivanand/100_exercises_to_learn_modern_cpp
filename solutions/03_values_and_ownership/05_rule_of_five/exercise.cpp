@@ -69,10 +69,10 @@ public:
     return *this;
   }
 
-  [[nodiscard]] int get() const noexcept {
+  int get() const noexcept {
     return handle_;
   }
-  [[nodiscard]] bool valid() const noexcept {
+  bool valid() const noexcept {
     return handle_ != fake_os::kInvalidHandle;
   }
 

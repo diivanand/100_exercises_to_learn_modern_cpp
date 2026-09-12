@@ -29,14 +29,14 @@ public:
     return has_value();
   }
 
-  [[nodiscard]] const T& value() const {
+  const T& value() const {
     return std::get<0>(storage_);
   }
-  [[nodiscard]] const E& error() const {
+  const E& error() const {
     return std::get<1>(storage_);
   }
 
-  [[nodiscard]] T value_or(T fallback) const {
+  T value_or(T fallback) const {
     return has_value() ? value() : std::move(fallback);
   }
 

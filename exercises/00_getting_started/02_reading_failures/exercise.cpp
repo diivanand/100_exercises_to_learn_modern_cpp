@@ -53,7 +53,7 @@ double average(const std::vector<int>& values) {
   // TODO: this is integer division -- 5 / 2 is 2, not 2.5. Both operands are
   // ints, so the division happens *before* the result is widened to double.
   // Convert deliberately, with a named cast, before dividing.
-  return total / static_cast<int>(values.size());
+  return total / static_cast<double>(values.size());
 }
 
 // `words` is read-only, so it is a view of const strings.
@@ -65,7 +65,7 @@ std::size_t count_long_words(const std::vector<std::string_view>& words,
     // one, and no compiler can tell you so -- which is exactly why the tests
     // exist. Warnings catch the mechanical mistakes; tests catch the ones you
     // make about meaning.
-    if (word.size() > min_length) {
+    if (word.size() >= min_length) {
       ++count;
     }
   }

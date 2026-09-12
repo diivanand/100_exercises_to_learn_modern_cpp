@@ -52,10 +52,10 @@ public:
       : rows_(rows), columns_(columns), cells_(rows * columns, 0) {}
 
   // TODO: these three observe and do not modify. Make them const.
-  [[nodiscard]] std::size_t rows() {
+  std::size_t rows() {
     return rows_;
   }
-  [[nodiscard]] std::size_t columns() {
+  std::size_t columns() {
     return columns_;
   }
   [[nodiscard]] bool empty() {
@@ -65,7 +65,7 @@ public:
   // TODO: provide both overloads:
   //   int& at(row, column)              -- for writing
   //   const int& at(row, column) const  -- for reading through a const Grid
-  [[nodiscard]] int& at(std::size_t row, std::size_t column) {
+  int& at(std::size_t row, std::size_t column) {
     return cells_[row * columns_ + column];
   }
 
@@ -75,7 +75,7 @@ public:
   //
   // TODO: make this const, and make `total_cache_` mutable so it can still be
   // filled in. Remember to invalidate the cache in `set`.
-  [[nodiscard]] int total() {
+  int total() {
     if (!total_cache_.has_value()) {
       int sum = 0;
       for (const int cell : cells_) {

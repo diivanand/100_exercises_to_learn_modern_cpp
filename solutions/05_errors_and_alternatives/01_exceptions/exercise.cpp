@@ -15,7 +15,7 @@ public:
   explicit MissingKey(const std::string& key)
       : ConfigError{"missing key: " + key}, key_{key} {}
 
-  [[nodiscard]] const std::string& key() const noexcept {
+  const std::string& key() const noexcept {
     return key_;
   }
 

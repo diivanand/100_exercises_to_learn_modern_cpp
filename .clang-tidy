@@ -75,6 +75,12 @@
 #   bugprone-branch-clone
 #       02.02's `if constexpr` chain has two branches that legitimately do the
 #       same thing for different types, which is the point of the exercise.
+#   modernize-use-nodiscard
+#       it wants `[[nodiscard]]` on every const member function. The course
+#       uses the attribute only where dropping the result is a bug -- an error
+#       or status return, a query that reads like a command such as `empty()`,
+#       and a function that hands back a resource such as `read_lock()`. See
+#       02.03. A getter marked `[[nodiscard]]` is noise, not safety.
 #
 # In short: this file is tuned so that `./mcpp tidy` says something useful
 # about the code YOU are writing, rather than burying it under complaints
@@ -84,7 +90,7 @@
 # YAML note: `Checks` is a folded scalar, so `#` inside it is NOT a comment --
 # it becomes part of the check list. Keep explanations up here.
 ---
-Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,-misc-non-private-member-variables-in-classes,-misc-use-anonymous-namespace,-misc-use-internal-linkage,-misc-include-cleaner,-modernize-use-trailing-return-type,-modernize-use-scoped-lock,-modernize-use-designated-initializers,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-redundant-member-init,-bugprone-unchecked-optional-access,-cppcoreguidelines-missing-std-forward,-bugprone-use-after-move,-clang-analyzer-cplusplus.Move,-cppcoreguidelines-avoid-non-const-global-variables,-performance-unnecessary-copy-initialization,-cppcoreguidelines-special-member-functions,-readability-math-missing-parentheses,-misc-const-correctness,-readability-convert-member-functions-to-static,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-readability-named-parameter,-performance-enum-size,-misc-multiple-inheritance,-bugprone-forwarding-reference-overload,-bugprone-return-const-ref-from-parameter,-bugprone-std-namespace-modification,-cert-dcl58-cpp,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-init-variables,-misc-unused-parameters,-bugprone-branch-clone,-readability-simplify-boolean-expr'
+Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,-misc-non-private-member-variables-in-classes,-misc-use-anonymous-namespace,-misc-use-internal-linkage,-misc-include-cleaner,-modernize-use-trailing-return-type,-modernize-use-scoped-lock,-modernize-use-designated-initializers,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-redundant-member-init,-bugprone-unchecked-optional-access,-cppcoreguidelines-missing-std-forward,-bugprone-use-after-move,-clang-analyzer-cplusplus.Move,-cppcoreguidelines-avoid-non-const-global-variables,-performance-unnecessary-copy-initialization,-cppcoreguidelines-special-member-functions,-readability-math-missing-parentheses,-misc-const-correctness,-readability-convert-member-functions-to-static,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-readability-named-parameter,-performance-enum-size,-misc-multiple-inheritance,-bugprone-forwarding-reference-overload,-bugprone-return-const-ref-from-parameter,-bugprone-std-namespace-modification,-cert-dcl58-cpp,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-init-variables,-misc-unused-parameters,-bugprone-branch-clone,-modernize-use-nodiscard,-readability-simplify-boolean-expr'
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'

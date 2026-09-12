@@ -56,7 +56,7 @@ public:
     return !handle_.done();
   }
 
-  [[nodiscard]] const T& value() const {
+  const T& value() const {
     return handle_.promise().current_value;
   }
 

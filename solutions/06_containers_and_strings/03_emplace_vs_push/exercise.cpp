@@ -21,20 +21,20 @@ public:
   Session& operator=(Session&&) noexcept = default;
   ~Session() = default;
 
-  [[nodiscard]] const std::string& user() const noexcept {
+  const std::string& user() const noexcept {
     return user_;
   }
-  [[nodiscard]] int id() const noexcept {
+  int id() const noexcept {
     return id_;
   }
 
-  [[nodiscard]] static int constructions() noexcept {
+  static int constructions() noexcept {
     return constructions_;
   }
-  [[nodiscard]] static int copies() noexcept {
+  static int copies() noexcept {
     return copies_;
   }
-  [[nodiscard]] static int moves() noexcept {
+  static int moves() noexcept {
     return moves_;
   }
 
