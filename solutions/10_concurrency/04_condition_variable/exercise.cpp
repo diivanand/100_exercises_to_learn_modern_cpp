@@ -52,7 +52,7 @@ public:
     not_empty_.notify_all();
   }
 
-  [[nodiscard]] std::size_t size() const {
+  std::size_t size() const {
     const std::lock_guard lock{mutex_};
     return items_.size();
   }

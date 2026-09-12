@@ -50,7 +50,7 @@ struct Payload {
 
   std::string text;
 
-  [[nodiscard]] static int constructions() noexcept {
+  static int constructions() noexcept {
     return constructions_;
   }
   static void reset_constructions() noexcept {

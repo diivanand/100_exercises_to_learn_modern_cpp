@@ -22,7 +22,7 @@ public:
     }
   }
 
-  [[nodiscard]] const std::string& value() const noexcept {
+  const std::string& value() const noexcept {
     return value_;
   }
 
@@ -62,26 +62,26 @@ public:
     return *this;
   }
 
-  [[nodiscard]] std::string_view get(const std::string& key) const {
+  std::string_view get(const std::string& key) const {
     const auto it = entries_.find(key);
     return it == entries_.end() ? std::string_view{} : std::string_view{it->second};
   }
 
-  [[nodiscard]] bool contains(const std::string& key) const {
+  bool contains(const std::string& key) const {
     return entries_.contains(key);
   }
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return entries_.size();
   }
   [[nodiscard]] bool empty() const noexcept {
     return entries_.empty();
   }
 
-  [[nodiscard]] auto begin() const {
+  auto begin() const {
     return entries_.begin();
   }
-  [[nodiscard]] auto end() const {
+  auto end() const {
     return entries_.end();
   }
 

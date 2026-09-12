@@ -70,7 +70,7 @@ public:
     return T{};
   }
 
-  [[nodiscard]] bool started() const {
+  bool started() const {
     return handle_ && handle_.done();
   }
 

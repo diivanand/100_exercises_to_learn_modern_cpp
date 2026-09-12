@@ -104,10 +104,10 @@ public:
     std::vector<int> values;
   };
 
-  [[nodiscard]] const std::vector<Record>& records() const noexcept {
+  const std::vector<Record>& records() const noexcept {
     return records_;
   }
-  [[nodiscard]] bool in_progress() const noexcept {
+  bool in_progress() const noexcept {
     return in_progress_;
   }
 

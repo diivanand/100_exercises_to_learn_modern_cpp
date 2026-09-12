@@ -104,11 +104,11 @@ public:
     ++count_;
   }
 
-  [[nodiscard]] double mean() const {
+  double mean() const {
     return count_ == 0 ? 0.0 : static_cast<double>(sum_) / count_;
   }
 
-  [[nodiscard]] int count() const {
+  int count() const {
     return count_;
   }
 

@@ -48,7 +48,7 @@ struct Person {
   int age = 0;
   double height = 0.0;
 
-  [[nodiscard]] std::string initials() const {
+  std::string initials() const {
     return name.empty() ? "" : std::string(1, name.front());
   }
 };

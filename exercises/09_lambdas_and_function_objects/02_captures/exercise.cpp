@@ -101,11 +101,11 @@ public:
   //
   // (When you genuinely need the object, `[*this]` copies it, and a
   // shared_ptr + weak_ptr is the answer when it must stay shared.)
-  [[nodiscard]] std::function<int(int)> adder() const {
+  std::function<int(int)> adder() const {
     return [this](int value) { return total_ + value; };
   }
 
-  [[nodiscard]] int total() const noexcept {
+  int total() const noexcept {
     return total_;
   }
 

@@ -65,11 +65,11 @@ public:
   Tool(Tool&&) = delete;
   Tool& operator=(Tool&&) = delete;
 
-  [[nodiscard]] const std::string& name() const noexcept {
+  const std::string& name() const noexcept {
     return name_;
   }
 
-  [[nodiscard]] static int live_count() noexcept {
+  static int live_count() noexcept {
     return live_count_;
   }
 
@@ -110,10 +110,10 @@ public:
   Workshop(const Workshop&) = delete;
   Workshop& operator=(const Workshop&) = delete;
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return tools_.size();
   }
-  [[nodiscard]] const Tool& at(std::size_t index) const {
+  const Tool& at(std::size_t index) const {
     return *tools_[index];
   }
 

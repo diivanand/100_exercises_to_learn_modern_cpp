@@ -69,7 +69,7 @@ class CaseInsensitive {
 public:
   explicit CaseInsensitive(std::string value) : value_(std::move(value)) {}
 
-  [[nodiscard]] const std::string& value() const noexcept {
+  const std::string& value() const noexcept {
     return value_;
   }
 

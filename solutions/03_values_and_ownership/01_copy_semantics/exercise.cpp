@@ -39,17 +39,17 @@ public:
     delete[] cells_; // NOLINT(clang-analyzer-cplusplus.NewDelete)
   }
 
-  [[nodiscard]] std::size_t rows() const noexcept {
+  std::size_t rows() const noexcept {
     return rows_;
   }
-  [[nodiscard]] std::size_t columns() const noexcept {
+  std::size_t columns() const noexcept {
     return columns_;
   }
 
-  [[nodiscard]] double& at(std::size_t row, std::size_t column) {
+  double& at(std::size_t row, std::size_t column) {
     return cells_[row * columns_ + column];
   }
-  [[nodiscard]] double at(std::size_t row, std::size_t column) const {
+  double at(std::size_t row, std::size_t column) const {
     return cells_[row * columns_ + column];
   }
 

@@ -66,7 +66,7 @@ public:
     return handle_.promise().value;
   }
 
-  [[nodiscard]] bool started() const {
+  bool started() const {
     return handle_ && handle_.done();
   }
 

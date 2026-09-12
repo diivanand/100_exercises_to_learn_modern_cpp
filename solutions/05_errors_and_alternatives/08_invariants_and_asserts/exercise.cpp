@@ -16,11 +16,11 @@ public:
     }
   }
 
-  [[nodiscard]] int value() const noexcept {
+  int value() const noexcept {
     return value_;
   }
 
-  [[nodiscard]] Percentage operator+(const Percentage& other) const {
+  Percentage operator+(const Percentage& other) const {
     // Both operands are already in range -- that is the invariant. Only the
     // sum can escape it, and the constructor is where that is checked, so
     // there is exactly one place in the class that knows the range.
@@ -53,7 +53,7 @@ public:
 
   // A precondition: there is no correct answer for an empty buffer, and the
   // caller can always check size() first.
-  [[nodiscard]] int front() const {
+  int front() const {
     assert(size_ > 0 && "front() on an empty buffer");
     return storage_[head_];
   }
@@ -64,13 +64,13 @@ public:
     --size_;
   }
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return size_;
   }
-  [[nodiscard]] std::size_t capacity() const noexcept {
+  std::size_t capacity() const noexcept {
     return storage_.size();
   }
-  [[nodiscard]] bool full() const noexcept {
+  bool full() const noexcept {
     return size_ == storage_.size();
   }
 

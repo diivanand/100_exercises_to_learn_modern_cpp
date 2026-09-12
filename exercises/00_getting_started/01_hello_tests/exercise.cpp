@@ -34,7 +34,7 @@ std::string greet(std::string_view name) {
   // Note that you cannot write `"Hello, " + name`: a string literal is a
   // `const char[8]`, and there is no `operator+` for two raw character
   // sequences. Start from a `std::string` instead, then append.
-  return std::string{name};
+  return "Hello, " + std::string{name} + "!";
 }
 
 TEST_CASE("greet builds a greeting") {

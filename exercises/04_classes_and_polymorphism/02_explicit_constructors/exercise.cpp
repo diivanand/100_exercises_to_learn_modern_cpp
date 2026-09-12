@@ -51,7 +51,7 @@
 class Timeout {
 public:
   Timeout(int seconds) : seconds_(seconds) {}
-  [[nodiscard]] int seconds() const noexcept {
+  int seconds() const noexcept {
     return seconds_;
   }
 
@@ -72,7 +72,7 @@ struct Point {
 class Name {
 public:
   Name(std::string value) : value_(std::move(value)) {}
-  [[nodiscard]] const std::string& value() const noexcept {
+  const std::string& value() const noexcept {
     return value_;
   }
 
@@ -90,7 +90,7 @@ public:
   template <typename U>
   Wrapper(U&& value) : value_(std::forward<U>(value)) {}
 
-  [[nodiscard]] const T& get() const noexcept {
+  const T& get() const noexcept {
     return value_;
   }
 

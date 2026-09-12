@@ -20,16 +20,16 @@ public:
 
   explicit Connection(std::string host) : Connection(std::move(host), 80) {}
 
-  [[nodiscard]] const std::string& host() const noexcept {
+  const std::string& host() const noexcept {
     return host_;
   }
-  [[nodiscard]] int port() const noexcept {
+  int port() const noexcept {
     return port_;
   }
-  [[nodiscard]] std::chrono::seconds timeout() const noexcept {
+  std::chrono::seconds timeout() const noexcept {
     return timeout_;
   }
-  [[nodiscard]] int attempts() const noexcept {
+  int attempts() const noexcept {
     return attempts_;
   }
 

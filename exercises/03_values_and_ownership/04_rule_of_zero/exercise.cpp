@@ -72,10 +72,10 @@ public:
 
   ~Document() {}
 
-  [[nodiscard]] const std::string& title() const noexcept {
+  const std::string& title() const noexcept {
     return title_;
   }
-  [[nodiscard]] std::size_t paragraph_count() const noexcept {
+  std::size_t paragraph_count() const noexcept {
     return paragraphs_.size();
   }
 

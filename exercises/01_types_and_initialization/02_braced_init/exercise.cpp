@@ -54,11 +54,9 @@ struct Rectangle {
   int width = 0;
   int height = 0;
 
-  // TODO: return the actual area. The `[[nodiscard]]` is already there: a
-  // caller who ignores the result has written a statement with no effect, and
-  // the compiler can say so. (`const` is right too -- computing an area does
+  // TODO: return the actual area. (`const` is right: computing an area does
   // not modify the rectangle.)
-  [[nodiscard]] int area() const {
+  int area() const {
     return width;
   }
 };

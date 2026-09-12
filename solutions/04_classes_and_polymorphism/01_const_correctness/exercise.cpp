@@ -10,27 +10,27 @@ public:
   Grid(std::size_t rows, std::size_t columns)
       : rows_(rows), columns_(columns), cells_(rows * columns, 0) {}
 
-  [[nodiscard]] std::size_t rows() const {
+  std::size_t rows() const {
     return rows_;
   }
-  [[nodiscard]] std::size_t columns() const {
+  std::size_t columns() const {
     return columns_;
   }
   [[nodiscard]] bool empty() const {
     return cells_.empty();
   }
 
-  [[nodiscard]] int& at(std::size_t row, std::size_t column) {
+  int& at(std::size_t row, std::size_t column) {
     return cells_[row * columns_ + column];
   }
 
-  [[nodiscard]] const int& at(std::size_t row, std::size_t column) const {
+  const int& at(std::size_t row, std::size_t column) const {
     return cells_[row * columns_ + column];
   }
 
   // `mutable` because the cache is not part of the grid's observable value:
   // filling it in does not change what the grid *is*.
-  [[nodiscard]] int total() const {
+  int total() const {
     if (!total_cache_.has_value()) {
       int sum = 0;
       for (const int cell : cells_) {

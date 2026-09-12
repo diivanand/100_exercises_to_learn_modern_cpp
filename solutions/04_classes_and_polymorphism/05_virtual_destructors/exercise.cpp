@@ -21,9 +21,9 @@ public:
   Resource(const Resource&) = delete;
   Resource& operator=(const Resource&) = delete;
 
-  [[nodiscard]] virtual std::string kind() const = 0;
+  virtual std::string kind() const = 0;
 
-  [[nodiscard]] static int live_count() noexcept {
+  static int live_count() noexcept {
     return live_count_;
   }
 
@@ -40,11 +40,11 @@ public:
     --buffer_live_count_;
   }
 
-  [[nodiscard]] std::string kind() const override {
+  std::string kind() const override {
     return "buffer";
   }
 
-  [[nodiscard]] static int buffer_live_count() noexcept {
+  static int buffer_live_count() noexcept {
     return buffer_live_count_;
   }
 
@@ -55,7 +55,7 @@ private:
 
 class Mixin {
 public:
-  [[nodiscard]] int tag() const noexcept {
+  int tag() const noexcept {
     return 7;
   }
 
@@ -68,7 +68,7 @@ protected:
 
 class Widget : public Mixin {
 public:
-  [[nodiscard]] std::string name() const {
+  std::string name() const {
     return "widget";
   }
 };

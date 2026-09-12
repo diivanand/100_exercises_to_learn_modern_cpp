@@ -60,12 +60,12 @@ public:
     }
   }
 
-  [[nodiscard]] std::size_t series_count() const {
+  std::size_t series_count() const {
     const std::shared_lock lock{mutex_};
     return series_.size();
   }
 
-  [[nodiscard]] std::size_t sample_count() const {
+  std::size_t sample_count() const {
     const std::shared_lock lock{mutex_};
     std::size_t total = 0;
     for (const auto& [key, samples] : series_) {
@@ -77,7 +77,7 @@ public:
   // Returns a COPY. Handing out a reference would let a caller read the vector
   // after the lock was released, which is the whole bug this class exists to
   // prevent.
-  [[nodiscard]] std::vector<Sample> samples_of(const SeriesKey& key) const {
+  std::vector<Sample> samples_of(const SeriesKey& key) const {
     const std::shared_lock lock{mutex_};
     const auto it = series_.find(key);
     return it == series_.end() ? std::vector<Sample>{} : it->second;
@@ -123,7 +123,7 @@ public:
     not_empty_.notify_all();
   }
 
-  [[nodiscard]] std::size_t depth() const {
+  std::size_t depth() const {
     const std::lock_guard lock{mutex_};
     return batches_.size();
   }
@@ -182,7 +182,7 @@ public:
     workers_.clear(); // each jthread's destructor joins
   }
 
-  [[nodiscard]] long batches_processed() const {
+  long batches_processed() const {
     return batches_processed_.load(std::memory_order_relaxed);
   }
 

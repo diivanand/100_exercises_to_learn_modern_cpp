@@ -54,7 +54,7 @@ struct Logger {
     lines.push_back(prefix + " [" + level + "] " + message);
   }
 
-  [[nodiscard]] std::size_t count() const {
+  std::size_t count() const {
     return lines.size();
   }
 };

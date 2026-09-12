@@ -60,7 +60,7 @@ public:
           return title;
         }()) {}
 
-  [[nodiscard]] const std::string& title() const noexcept {
+  const std::string& title() const noexcept {
     return title_;
   }
 

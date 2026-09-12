@@ -28,7 +28,7 @@ struct SeriesKey {
   friend bool operator==(const SeriesKey&, const SeriesKey&) = default;
   friend std::strong_ordering operator<=>(const SeriesKey&, const SeriesKey&) = default;
 
-  [[nodiscard]] bool has_tag(std::string_view key, std::string_view value) const {
+  bool has_tag(std::string_view key, std::string_view value) const {
     const auto it = tags.find(std::string{key});
     return it != tags.end() && it->second == value;
   }
@@ -47,7 +47,7 @@ struct Summary {
   double min = 0.0;
   double max = 0.0;
 
-  [[nodiscard]] double mean() const {
+  double mean() const {
     return count == 0 ? 0.0 : sum / static_cast<double>(count);
   }
 };

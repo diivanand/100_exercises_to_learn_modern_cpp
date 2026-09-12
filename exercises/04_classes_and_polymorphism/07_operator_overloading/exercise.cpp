@@ -53,7 +53,7 @@ public:
   constexpr Money() = default;
   constexpr explicit Money(std::int64_t cents) : cents_(cents) {}
 
-  [[nodiscard]] constexpr std::int64_t cents() const noexcept {
+  constexpr std::int64_t cents() const noexcept {
     return cents_;
   }
 

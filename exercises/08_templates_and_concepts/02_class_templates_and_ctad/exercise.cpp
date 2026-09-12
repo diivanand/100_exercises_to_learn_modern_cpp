@@ -68,14 +68,14 @@ public:
     return value;
   }
 
-  [[nodiscard]] const T& top() const {
+  const T& top() const {
     if (items_.empty()) {
       throw std::out_of_range{"top of an empty stack"};
     }
     return items_.back();
   }
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return items_.size();
   }
   [[nodiscard]] bool empty() const noexcept {

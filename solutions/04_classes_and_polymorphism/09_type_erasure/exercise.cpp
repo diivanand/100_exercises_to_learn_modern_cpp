@@ -8,20 +8,20 @@
 
 struct Circle {
   double radius = 1.0;
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "circle(" + std::to_string(static_cast<int>(radius)) + ")";
   }
 };
 
 struct Label {
   std::string text;
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "label(" + text + ")";
   }
 };
 
 struct Spacer {
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return "spacer";
   }
 };
@@ -46,7 +46,7 @@ public:
   Drawable& operator=(Drawable&&) noexcept = default;
   ~Drawable() = default;
 
-  [[nodiscard]] std::string render() const {
+  std::string render() const {
     return self_->render();
   }
 
@@ -59,7 +59,7 @@ private:
     Concept(Concept&&) = default;
     Concept& operator=(Concept&&) = default;
 
-    [[nodiscard]] virtual std::string render() const = 0;
+    virtual std::string render() const = 0;
     [[nodiscard]] virtual std::unique_ptr<Concept> clone() const = 0;
   };
 
@@ -67,7 +67,7 @@ private:
   struct Model final : Concept {
     explicit Model(T value) : object(std::move(value)) {}
 
-    [[nodiscard]] std::string render() const override {
+    std::string render() const override {
       return object.render();
     }
 
@@ -117,7 +117,7 @@ TEST_CASE("copies are deep") {
 
 TEST_CASE("adding a new type requires nothing of the old ones") {
   struct Divider {
-    [[nodiscard]] std::string render() const {
+    std::string render() const {
       return "---";
     }
   };

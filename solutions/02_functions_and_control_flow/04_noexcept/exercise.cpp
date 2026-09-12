@@ -23,7 +23,7 @@ public:
 
   ~Buffer() = default;
 
-  [[nodiscard]] std::size_t size() const noexcept {
+  std::size_t size() const noexcept {
     return data_.size();
   }
 

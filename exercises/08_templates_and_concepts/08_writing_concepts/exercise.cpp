@@ -84,7 +84,7 @@ struct Point {
   int x = 0;
   int y = 0;
 
-  [[nodiscard]] std::string to_string() const {
+  std::string to_string() const {
     return "(" + std::to_string(x) + "," + std::to_string(y) + ")";
   }
 };

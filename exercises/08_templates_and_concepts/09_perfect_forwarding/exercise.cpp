@@ -71,10 +71,10 @@ struct Tracked {
 
   std::string name;
 
-  [[nodiscard]] static int copies() noexcept {
+  static int copies() noexcept {
     return copies_;
   }
-  [[nodiscard]] static int moves() noexcept {
+  static int moves() noexcept {
     return moves_;
   }
 
@@ -130,7 +130,7 @@ public:
   Holder& operator=(Holder&&) noexcept = default;
   ~Holder() = default;
 
-  [[nodiscard]] const Tracked& payload() const noexcept {
+  const Tracked& payload() const noexcept {
     return payload_;
   }
 
