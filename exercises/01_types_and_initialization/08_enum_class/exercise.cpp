@@ -46,11 +46,11 @@
 #include <type_traits>
 
 // TODO: make this `enum class Permission : std::uint8_t`.
-enum Permission {
+enum class Permission : std::uint8_t {
   kNone = 0,
-  kRead = 1 << 0,
-  kWrite = 1 << 1,
-  kExecute = 1 << 2,
+  kRead = 1U << 0U,
+  kWrite = 1U << 1U,
+  kExecute = 1U << 2U,
 };
 
 // Converts any enum to its underlying integer type.
@@ -62,26 +62,33 @@ enum Permission {
 // TODO: implement it. Constrain it to enums so a mistaken call gets a clear
 // error rather than a page of template noise.
 template <typename E>
+  requires std::is_enum_v<E>
 constexpr auto to_underlying(E value) {
-  return value;
+  return std::__to_underlying(value);
 }
 
 // TODO: implement the bitmask operators. Scoped enums have no built-in
 // arithmetic, which is exactly why you must opt in deliberately -- and why
 // the opt-in is only three short functions.
-constexpr Permission operator|(Permission, Permission);
-constexpr Permission operator&(Permission, Permission);
-constexpr bool has(Permission set, Permission flag);
+constexpr Permission operator|(Permission lhs, Permission rhs) {
+  return static_cast<Permission>(to_underlying(lhs) | to_underlying(rhs));
+}
+constexpr Permission operator&(Permission lhs, Permission rhs) {
+  return static_cast<Permission>(to_underlying(lhs) & to_underlying(rhs));
+}
+constexpr bool has(Permission set, Permission flag) {
+  return (set & flag) == flag;
+}
 
 std::string describe(Permission set) {
   std::string result;
-  if (has(set, kRead)) {
+  if (has(set, Permission::kRead)) {
     result += 'r';
   }
-  if (has(set, kWrite)) {
+  if (has(set, Permission::kWrite)) {
     result += 'w';
   }
-  if (has(set, kExecute)) {
+  if (has(set, Permission::kExecute)) {
     result += 'x';
   }
   return result.empty() ? "-" : result;

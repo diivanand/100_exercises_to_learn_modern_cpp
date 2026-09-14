@@ -54,8 +54,8 @@ struct Measurement {
 // applied, and nothing in the expression says which half is which.
 int total_score(const std::map<std::string, int>& scores) {
   int total = 0;
-  for (const auto& entry : scores) {
-    total += entry.second;
+  for (const auto& [name, score] : scores) {
+    total += static_cast<int>(name.size()) * score;
   }
   return total;
 }
@@ -72,8 +72,8 @@ int total_score(const std::map<std::string, int>& scores) {
 // iterator, which is never `end()` after an insert -- and so reports every
 // name as new.
 bool remember(std::set<std::string>& seen, const std::string& name) {
-  const std::pair<std::set<std::string>::iterator, bool> result = seen.insert(name);
-  return result.first != seen.end();
+  const auto [position, inserted] = seen.insert(name);
+  return inserted;
 }
 
 // Scales the `value` of every valid measurement in place.
@@ -82,8 +82,11 @@ bool remember(std::set<std::string>& seen, const std::string& name) {
 // lets you write through them. While you are here, notice that the `valid`
 // flag is currently ignored.
 void scale_valid(std::vector<Measurement>& measurements, double factor) {
-  for (auto& measurement : measurements) {
-    measurement.value *= factor;
+  for (auto& [senor, value, valid] : measurements) {
+    if (!valid) {
+      continue;
+    }
+    value *= factor;
   }
 }
 

@@ -42,12 +42,10 @@
 // it after the check has already failed.
 int lookup_or(const std::map<std::string, int>& table, const std::string& key,
               int fallback) {
-  auto it = table.find(key);
-  if (it == table.end()) {
-    // Someone "helpfully" added a second lookup here later, reusing `it`.
-    it = table.begin();
+  if (const auto it = table.find(key); it != table.end()) {
+    return it->second;
   }
-  return it == table.end() ? fallback : it->second;
+  return fallback;
 }
 
 enum class Size { kEmpty, kSmall, kLarge };
@@ -59,19 +57,23 @@ enum class Size { kEmpty, kSmall, kLarge };
 // lets the missing case slip through silently -- without it, this project's
 // -Werror build would reject the switch for not handling `kLarge`.
 Size size_of(std::string_view text) {
-  if (text.empty()) {
-    return Size::kEmpty;
+  switch (const size_t text_size = text.size(); text_size) {
+    case 0: return Size::kEmpty;
+    case 1:
+    case 2:
+    case 3: return Size::kSmall;
+    default: return Size::kLarge;
   }
-  return text.size() <= 3 ? Size::kSmall : Size::kLarge;
 }
 
 std::string classify(std::string_view text) {
-  const Size size = size_of(text);
-  switch (size) {
+  switch (const Size size = size_of(text); size) {
   case Size::kEmpty:
     return "empty";
-  default:
+  case Size::kSmall:
     return "small";
+  case Size::kLarge:
+    return "large";
   }
 }
 

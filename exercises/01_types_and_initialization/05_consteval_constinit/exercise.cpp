@@ -38,6 +38,8 @@
 #include <doctest/doctest.h>
 
 #include <cstdint>
+#include <ranges>
+#include <stdexcept>
 #include <string_view>
 
 // A tiny FNV-1a hash. Hashing a string literal is exactly the kind of work
@@ -45,7 +47,7 @@
 //
 // TODO: make this `consteval` so that calling it with a runtime string is a
 // compile error rather than a silent cost.
-constexpr std::uint32_t checksum(std::string_view text) {
+consteval std::uint32_t checksum(std::string_view text) {
   std::uint32_t hash = 2166136261U;
   for (const char c : text) {
     hash ^= static_cast<std::uint32_t>(static_cast<unsigned char>(c));
@@ -59,7 +61,7 @@ constexpr std::uint32_t checksum(std::string_view text) {
 //
 // TODO: mark it `constinit`. (Note that `constexpr` would not work here: the
 // variable is modified below, and constexpr implies const.)
-std::uint32_t kGeneration = checksum("v1");
+constinit std::uint32_t kGeneration = checksum("v1");
 
 struct Version {
   int major = 0;
@@ -67,6 +69,8 @@ struct Version {
 
   friend constexpr bool operator==(const Version&, const Version&) = default;
 };
+
+consteval bool is_digit(char c) { return c >= '0' && c <= '9'; }
 
 // Parses "MAJOR.MINOR" for single-digit components.
 //
@@ -77,8 +81,14 @@ struct Version {
 // appear in a constant expression, so reaching one turns the call into a
 // compile error at the call site. It is how you write a precondition the
 // compiler enforces -- with a readable message attached.
-constexpr Version parse_version(std::string_view /*text*/) {
-  return Version{};
+consteval Version parse_version(std::string_view text) {
+  if (text.size() != 3
+    || !is_digit(text[0])
+    || text[1] != '.'
+    || !is_digit(text[2])) {
+    throw std::invalid_argument{"invalid version string"};
+  }
+  return Version{.major = text[0] - '0', .minor = text[2] - '0'};
 }
 
 TEST_CASE("checksum runs at compile time") {
