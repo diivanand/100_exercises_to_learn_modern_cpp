@@ -1,13 +1,13 @@
 # 100 exercises to learn modern C++
 
-> **Status (12 September 2026).** I have worked through exercises 00.01 to
-> 01.04 so far. Everything after that was drafted with AI assistance (Claude)
-> from the books and documentation listed at the end of this page, and has not
-> yet been through my own hands: an exercise I have not reached may contain
-> mistakes in its prose, its starter or its tests, and I fix those as I get to
-> each one. The CUDA chapters (14 to 17) additionally have not yet been
-> compiled or run on the GPU machine; CI compiles them, but the first real run
-> is still to come.
+> **Status (14 September 2026).** I have worked through exercises 00.01 to
+> 01.08 so far, which completes chapter 01. Everything after that was drafted
+> with AI assistance (Claude) from the books and documentation listed at the
+> end of this page, and has not yet been through my own hands: an exercise I
+> have not reached may contain mistakes in its prose, its starter or its tests,
+> and I fix those as I get to each one. The CUDA chapters (14 to 17)
+> additionally have not yet been compiled or run on the GPU machine; CI
+> compiles them, but the first real run is still to come.
 
 Learn C++20 by fixing, finishing and writing 100 small programs. Then, if you
 have an NVIDIA GPU within reach, carry on into 25 more that teach modern CUDA
