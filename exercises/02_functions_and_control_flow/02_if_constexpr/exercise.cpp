@@ -41,6 +41,12 @@
 #include <string_view>
 #include <type_traits>
 
+// A `static_assert(false)` inside a discarded `if constexpr` branch is still
+// ill-formed in C++20, because the condition does not depend on T. Making it
+// depend on T defers the check until the branch is actually instantiated.
+template <typename>
+inline constexpr bool always_false = false;
+
 template <typename T>
 std::string to_string(const T& value) {
   // TODO: dispatch on the type with `if constexpr`:
@@ -51,7 +57,17 @@ std::string to_string(const T& value) {
   //   * convertible to string_view -> std::string(value)
   //
   // Order matters: `bool` is an integral type, so test for it first.
-  return std::to_string(value);
+  if constexpr (std::is_same_v<T, bool>) {
+    return value ? "true" : "false";
+  } else if constexpr (std::is_integral_v<T>) {
+    return std::to_string(value);
+  } else if constexpr (std::is_floating_point_v<T>) {
+    return std::to_string(value);
+  } else if constexpr (std::is_convertible_v<T, std::string_view>) {
+    return std::string(value);
+  } else {
+    static_assert(always_false<T>, "to_string: unsupported type");
+  }
 }
 
 TEST_CASE("integers") {

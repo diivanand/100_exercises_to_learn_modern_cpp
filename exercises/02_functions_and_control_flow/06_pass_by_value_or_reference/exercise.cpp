@@ -62,7 +62,7 @@ int sum(std::vector<int> values) {
 // TODO: `text` is only read, and the function never needs to own it. A
 // `const std::string&` forces every caller holding a literal or a
 // string_view to build a std::string first.
-std::size_t count_vowels(const std::string& text) {
+std::size_t count_vowels(const std::string_view text) {
   std::size_t count = 0;
   for (const char c : text) {
     if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
@@ -77,7 +77,7 @@ public:
   // TODO: this is a sink -- the prefix is stored. Taking `const std::string&`
   // means a caller passing a temporary still pays for a copy. Take it by
   // value and move it into the member.
-  explicit Logger(const std::string& prefix) : prefix_(prefix) {}
+  explicit Logger(const std::string prefix) : prefix_(prefix) {}
 
   std::string format(std::string_view message) const {
     return prefix_ + ": " + std::string{message};
@@ -95,21 +95,20 @@ struct MinMax {
   int max = 0;
 };
 
-void min_max(const std::vector<int>& values, MinMax& out) {
+MinMax min_max(const std::vector<int>& values) {
   if (values.empty()) {
-    out = MinMax{};
-    return;
+    return MinMax{};
   }
-  out.min = values.front();
-  out.max = values.front();
+  MinMax result = MinMax{.min = values.front(), .max = values.front()};
   for (const int value : values) {
-    if (value < out.min) {
-      out.min = value;
+    if (value < result.min) {
+      result.min = value;
     }
-    if (value > out.max) {
-      out.max = value;
+    if (value > result.max) {
+      result.max = value;
     }
   }
+  return result;
 }
 
 TEST_CASE("sum reads without copying") {

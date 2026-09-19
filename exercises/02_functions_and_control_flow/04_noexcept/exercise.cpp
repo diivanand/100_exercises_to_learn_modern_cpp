@@ -61,9 +61,9 @@ public:
   //
   // Ask yourself why it is safe: moving a std::vector steals a pointer. No
   // allocation happens, so there is nothing to throw.
-  Buffer(Buffer&& other) : data_(std::move(other.data_)) {}
+  Buffer(Buffer&& other) noexcept : data_(std::move(other.data_)) {}
 
-  Buffer& operator=(Buffer&& other) {
+  Buffer& operator=(Buffer&& other) noexcept {
     data_ = std::move(other.data_);
     return *this;
   }
@@ -76,7 +76,7 @@ public:
 
   // TODO: a member swap can never throw -- it swaps two vectors, which swap
   // pointers. Mark it noexcept.
-  void swap(Buffer& other) {
+  void swap(Buffer& other) noexcept {
     data_.swap(other.data_);
   }
 
@@ -85,7 +85,7 @@ private:
 };
 
 // TODO: make this noexcept too, so `std::swap` on a Buffer is noexcept.
-void swap(Buffer& lhs, Buffer& rhs) {
+void swap(Buffer& lhs, Buffer& rhs) noexcept {
   lhs.swap(rhs);
 }
 

@@ -57,26 +57,32 @@ struct HttpConfig {
   // specify only the fields they care about. Sensible values:
   //   host "localhost", port 80, timeout 30s, verify_tls true,
   //   follow_redirects true, max_retries 3.
-  std::string host;
-  int port;
-  std::chrono::seconds timeout;
-  bool verify_tls;
-  bool follow_redirects;
-  int max_retries;
+  std::string host = "localhost";
+  int port = 80;
+  std::chrono::seconds timeout = std::chrono::seconds{30};
+  bool verify_tls = true;
+  bool follow_redirects = true;
+  int max_retries = 3;
 };
 
 // TODO: return a config for a local development server: host "127.0.0.1",
 // port 8080, TLS verification off. Everything else stays at its default.
 // Use designated initialisers.
 HttpConfig development_config() {
-  return HttpConfig{};
+  return HttpConfig{
+    .host = "127.0.0.1",
+    .port = 8080,
+    .verify_tls = false,
+  };
 }
 
 // TODO: return a config that keeps every default except the timeout, which
 // becomes `timeout`.
 HttpConfig with_timeout(std::chrono::seconds timeout) {
   (void)timeout;
-  return HttpConfig{};
+  return HttpConfig{
+    .timeout = timeout,
+  };
 }
 
 TEST_CASE("defaults are sensible on their own") {

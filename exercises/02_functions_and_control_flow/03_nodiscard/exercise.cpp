@@ -45,6 +45,7 @@
 
 // A pure computation: ignoring the result means the call was pointless.
 // TODO: add [[nodiscard]].
+[[nodiscard]]
 std::vector<int> sorted_copy(std::vector<int> values) {
   // Passing by value and sorting the parameter is deliberate -- see 02.06.
   for (std::size_t i = 1; i < values.size(); ++i) {
@@ -61,8 +62,7 @@ std::vector<int> sorted_copy(std::vector<int> values) {
 // happened" bugs are born.
 // TODO: mark the *type* [[nodiscard]] with a reason, so every function
 // returning a ParseResult is covered without repeating the attribute.
-enum class ParseResult { kOk, kEmpty, kNotANumber };
-
+enum class [[nodiscard]] ParseResult { kOk, kEmpty, kNotANumber };
 ParseResult parse_int(std::string_view text, int& out) {
   if (text.empty()) {
     return ParseResult::kEmpty;
@@ -83,12 +83,16 @@ ParseResult parse_int(std::string_view text, int& out) {
 // Write that with a [[fallthrough]], so the fallthrough is explicit rather
 // than accidental.
 std::string describe(ParseResult result, [[maybe_unused]] std::string_view input) {
+  std::string message;
   switch (result) {
   case ParseResult::kOk:
     return "ok";
   case ParseResult::kEmpty:
+    message += "empty: ";
+    [[fallthrough]];
   case ParseResult::kNotANumber:
-    return "bad input";
+    message += "bad input";
+    return message;
   }
   return "unreachable";
 }

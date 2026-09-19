@@ -42,8 +42,8 @@
 // look like it works.
 int sum(const std::vector<int>& values) {
   int total = 0;
-  for (std::size_t i = 0; i <= values.size(); ++i) {
-    total += values[i];
+  for (const auto& value : values) {
+    total += value;
   }
   return total;
 }
@@ -55,9 +55,12 @@ int sum(const std::vector<int>& values) {
 // The index version below appends a trailing separator.
 std::string join(const std::vector<std::string>& values, const std::string& separator) {
   std::string result;
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    result += values[i];
-    result += separator;
+  for (bool first = true; const auto& value : values) {
+    if (!first) {
+      result += separator;
+    }
+    result += value;
+    first = false;
   }
   return result;
 }
@@ -67,8 +70,7 @@ std::string join(const std::vector<std::string>& values, const std::string& sepa
 // TODO: rewrite as a range-for over references. The loop below writes to a
 // copy of the element, because `values[i]` is read into `value` first.
 void quantise(std::vector<int>& values, int step) {
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    int value = values[i];
+  for (auto& value : values) {
     value = (value / step) * step;
   }
 }
