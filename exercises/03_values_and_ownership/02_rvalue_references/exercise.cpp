@@ -56,14 +56,16 @@ struct Sink {
 
   // TODO: append a copy of `value` and increment `copies`.
   void store(const std::string& value) {
-    (void)value;
+    values.push_back(value);
+    copies++;
   }
 
   // TODO: append `value` *by moving it* and increment `moves`. Remember that
   // `value` is an lvalue inside this function, even though its type is
   // `std::string&&`.
   void store(std::string&& value) {
-    (void)value;
+    values.push_back(std::move(value));
+    moves++;
   }
 };
 
@@ -74,7 +76,7 @@ struct Sink {
 // a variable is the whole technique.
 void store_twice(Sink& sink, std::string value) {
   sink.store(value);
-  sink.store(value);
+  sink.store(std::move(value));
 }
 
 TEST_CASE("overload resolution picks by value category") {

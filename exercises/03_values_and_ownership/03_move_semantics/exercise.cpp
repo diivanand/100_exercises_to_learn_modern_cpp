@@ -66,6 +66,18 @@ public:
   // Note that declaring the copy operations above suppressed the compiler's
   // implicit move operations -- which is why every "move" in the tests below
   // is currently landing on the copy path.
+  TextBuffer(TextBuffer&& other) noexcept : lines_(std::move(other.lines_)) {
+    ++move_count_;
+  }
+
+  TextBuffer& operator=(TextBuffer&& other) noexcept {
+    if (this != &other) {
+      lines_ = std::move(other.lines_);
+      other.lines_.clear();
+      ++move_count_;
+    }
+    return *this;
+  }
 
   ~TextBuffer() = default;
 

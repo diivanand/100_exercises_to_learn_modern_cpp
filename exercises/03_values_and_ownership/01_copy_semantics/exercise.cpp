@@ -36,6 +36,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <algorithm>
 
 class Matrix {
 public:
@@ -57,6 +58,22 @@ public:
   //
   // The copy-and-swap idiom handles both:
   //   Matrix& operator=(Matrix other) { swap(other); return *this; }
+
+  Matrix(const Matrix& other) {
+    rows_ = other.rows_;
+    columns_ = other.columns_;
+    cells_ = new double[rows_ * columns_];
+    std::copy_n(other.cells_, rows_ * columns_, cells_);
+  }
+
+  Matrix& operator=(Matrix other) {
+    swap(other);
+    return *this;
+  }
+
+  ~Matrix() {
+    delete[] cells_;
+  }
 
   std::size_t rows() const noexcept {
     return rows_;
