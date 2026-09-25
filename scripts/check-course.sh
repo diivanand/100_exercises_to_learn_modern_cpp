@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Course integrity check. This is what CI runs, and what you should run after
+# Course integrity check. Run it after
 # editing an exercise. It asserts three things:
 #
 #   1. Every reference solution compiles and passes. A solution that does not

@@ -30,8 +30,7 @@ are a few more rules:
   an absolute time.
 - Buffers stay at or below 256 MB and the whole exercise under ten seconds.
 - `./scripts/check-course.sh` on the GPU machine is the only full check; on a
-  machine without nvcc it skips the CUDA chapters and says so. CI compiles
-  the CUDA solutions but cannot run them.
+  machine without nvcc it skips the CUDA chapters and says so.
 
 ## What the checker enforces
 

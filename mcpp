@@ -5,7 +5,7 @@
 #   ./mcpp next                 build and run the first exercise that is not
 #                               yet passing; this is the main loop
 #   ./mcpp test [filter]        run the exercises matching a filter
-#   ./mcpp verify               run every exercise (what CI does)
+#   ./mcpp verify               run every exercise
 #   ./mcpp solution <filter>    diff your work against the reference solution
 #   ./mcpp list [filter]        list the exercises and where you are
 #   ./mcpp build [filter]       build without running
@@ -372,7 +372,7 @@ cmd_clean() {
 }
 
 cmd_solutions_check() {
-  # Used by CI to prove every reference solution actually passes.
+  # Proves every reference solution actually passes.
   configure "${SOLUTION_BUILD_DIR}" "${SOLUTION_PRESET}"
   cmake --build "${SOLUTION_BUILD_DIR}" --target solutions
   ctest --test-dir "${SOLUTION_BUILD_DIR}" --output-on-failure -R '^solution/'

@@ -3,12 +3,12 @@
 > **Status (20 September 2026).** I have worked through exercises 00.01 to
 > 03.03 so far: chapters 00 to 02 complete, and the first three of chapter
 > 03's nine — 19 of the 100 C++ exercises. 03.04 (rule of zero) is next.
-> Everything from 03.04 onwards was drafted with AI assistance (Claude) from
+> Everything from 03.04 onwards was drafted with AI assistance from
 > the books and documentation listed at the end of this page, and has not yet
 > been through my own hands: an exercise I have not reached may contain
 > mistakes in its prose, its starter or its tests, and I fix those as I get to
 > each one. The CUDA chapters (14 to 17) additionally have not yet been
-> compiled or run on the GPU machine; CI compiles them, but the first real run
+> compiled or run on the GPU machine; the first real run
 > is still to come.
 
 Learn C++20 by fixing, finishing and writing 100 small programs. Then, if you
@@ -27,7 +27,7 @@ This is the C++ counterpart to
 
 - **A recent C++20 toolchain.** The course uses `std::format`, `std::jthread`
   and the full `<ranges>`, which arrived in the standard libraries later than
-  the core language did. What is known to work (CI builds the macOS row):
+  the core language did. What is known to work:
   - GCC 13 or newer (libstdc++ 13 is the first with `<format>`);
   - Clang 18 or newer, with either libstdc++ 13+ or libc++ 18+;
   - macOS: Xcode 16 or newer. `xcode-select --install` is enough.
@@ -63,7 +63,7 @@ When every exercise passes, you are done.
 ```
 ./mcpp next                 the main loop: run the first unfinished exercise
 ./mcpp test <filter>        run one exercise    (./mcpp test 03_07, or unique_ptr)
-./mcpp verify               run everything, as CI does
+./mcpp verify               run every exercise
 ./mcpp list                 the curriculum, and where you are in it
 ./mcpp solution <filter>    diff your work against the reference solution
 ./mcpp build <filter>       build without running
@@ -246,9 +246,9 @@ cmake --preset cuda-solutions && ctest --preset cuda-solutions -L cuda
 ./scripts/check-course.sh    # includes the CUDA chapters when nvcc is found
 ```
 
-CI cannot run them (GitHub's hosted runners have no GPU) but it does
-**compile** every CUDA solution with nvcc on every push, which catches the
-large majority of mistakes.
+A machine without a GPU cannot RUN them, but nvcc needs no device to
+compile: check-course.sh compiles every CUDA solution wherever nvcc is
+installed, which catches the large majority of mistakes.
 
 ## Solutions
 
